@@ -6,4 +6,6 @@ CS3750 Stock Trading APP
 
 
 #plotly documentation: https://plotly.com/python/
-  #https://observablehq.com/@d3/gallery
+  
+ 
+#https://observablehq.com/@d3/gallery
