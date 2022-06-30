@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "library": "d3@7.5.0",
+      "destination": "wwwroot/d3/"
+    },
+    {
+      "library": "plotly.js@2.12.1",
+      "destination": "wwwroot/lib/plotly.js/"
+    }
+  ]
+}
