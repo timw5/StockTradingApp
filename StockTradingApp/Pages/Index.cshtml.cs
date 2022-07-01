@@ -23,8 +23,8 @@ namespace StockTradingApp.Pages
         public void OnGet()
         {
             DataAccess da = new DataAccess("AAPL");
-            var x = da.Avg_Daily_High();
-            var y = da.GetOpen_Price("2022-1-10");
+            var x = da.GetAvg_High();
+            var y = da.GetOpen_Price("2022-01-10");
             SupportedTickers = new();
             SupportedTickers = DataAccess.GetSupportedTickers();
             Dates = new();

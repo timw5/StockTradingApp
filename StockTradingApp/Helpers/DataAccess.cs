@@ -51,22 +51,22 @@ namespace StockTradingApp.Helpers
             return BulkData.Where(x => x.date == date).Select(x => x.volume).First();
         }
 
-        public decimal GetAverage_Open()
+        public decimal GetAvg_Open()
         {
             return BulkData.Average(x => x.open);
         }
 
-        public decimal GetAverage_Close()
+        public decimal GetAvg_Close()
         {
             return BulkData.Average(x => x.close);
         }
 
-        public decimal GetAverage_High()
+        public decimal GetAvg_High()
         {
             return BulkData.Average(x => x.high);
         }
 
-        public decimal GetAverage_Low()
+        public decimal GetAvg_Low()
         {
             return BulkData.Average(x => x.low);
         }
