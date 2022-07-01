@@ -3,14 +3,27 @@
 @{
     ViewData["Title"] = "Home page";
 }
+<div class="container w-50 p-2">
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
-<div id="results">
+    <label for="Tickers" class="form-label">Tickers</label>
+    <input class="form-control" list="TickerData" id="Tickers" placeholder="Type to search..."/>
+    <datalist id="TickerData">
+        @foreach (var item in Model.SupportedTickers) {
+            <option value = "@item"></option>
+        }
+    </datalist>
 
+    <label for="DateStart" class="form-label">Starting Date</label>
+    <input class="form-control" list="DateStartData" id="DateStart" placeholder="Type to search..."/>
+    <datalist id="DateStartData" list="">
+        @foreach (var item in Model.Dates) {
+            <option value = "@item.ToShortDateString()"></option>
+        }
+
+    </datalist>
 </div>
+
+
 
 
 @section Scripts
@@ -42,6 +55,17 @@
         };
 
         var data = [trace1, trace2, trace3];
-        Plotly.newPlot('results', data);
+        //Plotly.newPlot('results', data);
+
+
+$.ajax
+({
+    URL: '',
+    type: 'GET'
+    async: '',
+    data: '',
+
+
+})
     </script>
 }
