@@ -3,24 +3,41 @@
 @{
     ViewData["Title"] = "Home page";
 }
-<div class="container w-50 p-2">
+@Html.AntiForgeryToken() @*Added anti-forgery token for ajax call*@
+<div class="container w-100 text-start">
+    <div class="row">
+        <div class="col">
+            <label for="Tickers" class="form-label">Tickers</label>
+            <input class="form-control" autocomplete="on" list="TickerData" id="Tickers" placeholder="Type to search..."/>
+            <datalist id="TickerData">
+                @foreach (var item in Model.SupportedTickers) {
+                    <option value = "@item"></option>
+                }
+            </datalist>
+        </div>
+        <div class="col">
+            <label for="DateStart" class="form-label">Starting Date</label>
+            <input class="form-control" autocomplete="on" list="DateStartData" id="DateStart" placeholder="Type to search..."/>
+            <datalist id="DateStartData">
+                @foreach (var item in Model.Dates) {
+                    <option value = "@item.ToShortDateString()"></option>
+                }
+            </datalist>
+        </div>
+        <div class="col">
+            <label for="DateEnd" class="form-label">End Date</label>
+            <input class="form-control" autocomplete="on" list="DateEndData" id="DateEnd" placeholder="Type to search..."/>
+            <datalist id="DateEndData">
+                @foreach (var item in Model.Dates) {
+                    <option value = "@item.ToShortDateString()"></option>
+                }
+            </datalist>
+        </div>
+    </div>
+    <div class="container w-100 mt-6" id="amnt">
+        
 
-    <label for="Tickers" class="form-label">Tickers</label>
-    <input class="form-control" list="TickerData" id="Tickers" placeholder="Type to search..."/>
-    <datalist id="TickerData">
-        @foreach (var item in Model.SupportedTickers) {
-            <option value = "@item"></option>
-        }
-    </datalist>
-
-    <label for="DateStart" class="form-label">Starting Date</label>
-    <input class="form-control" list="DateStartData" id="DateStart" placeholder="Type to search..."/>
-    <datalist id="DateStartData" list="">
-        @foreach (var item in Model.Dates) {
-            <option value = "@item.ToShortDateString()"></option>
-        }
-
-    </datalist>
+    </div>
 </div>
 
 
@@ -30,42 +47,95 @@
 {
     <script>
         //Plotly Example:
-        var trace1 = 
-        {
-          x: [1, 2, 3, 4],
-          y: [10, 15, 13, 17],
-          mode: 'markers',
-          type: 'scatter'
-        };
+        //var trace1 = 
+        //{
+        //  x: [1, 2, 3, 4],
+        //  y: [10, 15, 13, 17],
+        //  mode: 'markers',
+        //  type: 'scatter'
+        //};
 
-        var trace2 = 
-        {
-          x: [2, 3, 4, 5],
-          y: [16, 5, 11, 9],
-          mode: 'lines',
-          type: 'scatter'
-        };
+        //var trace2 = 
+        //{
+        //  x: [2, 3, 4, 5],
+        //  y: [16, 5, 11, 9],
+        //  mode: 'lines',
+        //  type: 'scatter'
+        //};
 
-        var trace3 = 
-        {
-          x: [1, 2, 3, 4],
-          y: [12, 9, 15, 12],
-          mode: 'lines+markers',
-          type: 'scatter'
-        };
+        //var trace3 = 
+        //{
+        //  x: [1, 2, 3, 4],
+        //  y: [12, 9, 15, 12],
+        //  mode: 'lines+markers',
+        //  type: 'scatter'
+        //};
 
-        var data = [trace1, trace2, trace3];
+        //var data = [trace1, trace2, trace3];
         //Plotly.newPlot('results', data);
 
 
-$.ajax
-({
-    URL: '',
-    type: 'GET'
-    async: '',
-    data: '',
+
+var plotData = [];
+$('#Tickers').change( function() 
+{
+    var msg = $(this).val()
+   
+    $.ajax
+        ({
+            type: "POST",
+            url: "./Index?handler=GetTickerData",
+            beforeSend: (xhr) => {
+                xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
+
+            },
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            data: JSON.stringify(msg, 'ticker'),
+            success: (message) => {
+                plotData = message
+                displayGraph(plotData)
+            }
 
 
-})
+        })
+} );
+
+displayGraph = (data) => 
+{
+    var xx = []
+    for (var i of data) {
+        xx.push(i.date)
+    }
+    var yy = []
+    console.log(data)
+    for (var i of data) {
+        yy.push(i['open'])
+    }   
+        console.log(xx)
+
+
+
+    var trace1 = {
+        x: xx,
+        y: yy,
+        type: 'scatter',
+        mode: 'lines',
+
+    };
+    var data = [ trace1 ]
+
+    var layout = {
+        xaxis: {
+            type: 'date',
+            title: 'Dates'
+        },
+        yaxis: {
+            title: 'Daily Open Price'
+        }
+    }
+
+    Plotly.newPlot('amnt', data, layout)
+}
     </script>
 }

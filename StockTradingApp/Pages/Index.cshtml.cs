@@ -31,5 +31,15 @@ namespace StockTradingApp.Pages
             Dates = DataAccess.GetDates();
 
         }
+
+        public IActionResult OnPostGetTickerData([FromBody]string ticker)
+        {
+            DataAccess da = new DataAccess(ticker);
+            var data = da.BulkData.ToList();
+            return new JsonResult(data);
+        }
+
+
     }
+
 }
