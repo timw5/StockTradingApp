@@ -88,13 +88,13 @@ namespace StockTradingApp.Helpers
             sliceofbreadContext Conn = new();
             DbSet<StockData> db = Conn.StockData;
 
-            var dates =  db.Select(x=>x.date).ToList();
+            var dates =  db.Select(x=>x.date).Distinct().ToList();
             List<DateTime> result = new();
             foreach(var d in dates)
             {
                 result.Add(Str_To_date(d));
             }
-            result = result.OrderBy(x => x.Date).Distinct().ToList();
+            result = result.OrderBy(x => x.Date).ToList();
             return result;
         }
 
