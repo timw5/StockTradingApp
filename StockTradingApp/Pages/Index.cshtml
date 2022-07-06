@@ -5,6 +5,8 @@
 }
 <div class="container w-50 p-2">
 
+    <p id="promtUserEnterTicker">Select a Ticker Symbol</p>
+
     <label for="Tickers" class="form-label">Tickers</label>
     <input class="form-control" list="TickerData" id="Tickers" placeholder="Type to search..."/>
     <datalist id="TickerData">
@@ -21,14 +23,64 @@
         }
 
     </datalist>
+
+    <div>
+        <span>Current Balance   </span><span id="">$10,000.00</span>
+    </div>
+
+    <div id="divButtonsInvest">
+        <button style="display:inline-block" onclick="onButtonClickStart()" id="btnStart">Start</button>
+        <button style="display:none" onclick="onButtonClickQuit()" id="btnQuit">Quit</button>
+        <button style="display:none" onclick="onButtonClickBuy()" id="btnBuy">Buy</button>
+        <button style="display:none" onclick="onButtonClickSell()" id="btnSell">Sell</button>
+        <button style="display:none" onclick="onButtonClickHold()" id="btnHold">Hold</button>
+    </div>
+
+    <p id="testFunction">_____</p>
+
 </div>
-
-
 
 
 @section Scripts
 {
     <script>
+
+        function onButtonClickStart() {
+            
+            var start = document.getElementById("btnStart");
+            
+            var buy = document.getElementById("btnBuy");
+            var sell = document.getElementById("btnSell");
+            var hold = document.getElementById("btnHold");
+            var quit = document.getElementById("btnQuit");
+            
+            if (start.style.display === "inline-block") {
+                // turn off star button, then turn on quit and all the other buttons //
+                start.style.display = "none";
+                quit.style.display = "inline-block";
+                start.innerHTML = "Quit";
+                buy.style.display = "inline-block";
+                sell.style.display = "inline-block";
+                hold.style.display = "inline-block";
+            }
+        }
+
+        function onButtonClickQuit() {
+            document.getElementById("testFunction").innerHTML = "QUIT BUTTON";
+        }
+
+        function onButtonClickBuy() {
+            document.getElementById("testFunction").innerHTML = "BUY BUTTON";
+        }
+
+        function onButtonClickSell() {
+            document.getElementById("testFunction").innerHTML = "SELL BUTTON";
+        }
+
+        function onButtonClickHold() {
+            document.getElementById("testFunction").innerHTML = "HOLD BUTTON";
+        }
+
         //Plotly Example:
         var trace1 = 
         {
@@ -57,7 +109,7 @@
         var data = [trace1, trace2, trace3];
         //Plotly.newPlot('results', data);
 
-
+/*
 $.ajax
 ({
     URL: '',
@@ -67,5 +119,6 @@ $.ajax
 
 
 })
+*/
     </script>
 }
