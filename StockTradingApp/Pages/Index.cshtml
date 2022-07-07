@@ -5,8 +5,7 @@
 }
 @Html.AntiForgeryToken() @*Added anti-forgery token for ajax call*@
 <div class="container w-100 text-center">
-    <div class="row w-50 mx-auto ">
-        <div class="container">
+    <div class="row w-50 mx-auto">
             <label for="Tickers" class="form-label">Tickers</label>
             <input class="form-control ml-4 pl-4" autocomplete="on" list="TickerData" id="Tickers" placeholder="Type to search..." />
             <datalist id="TickerData">
@@ -15,7 +14,6 @@
                     <option value="@item"></option>
                 }
             </datalist>
-        </div>
     </div>
     <div class="container mt-2 text-center">
         <div class="row">
