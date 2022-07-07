@@ -4,6 +4,7 @@ using StockTradingApp.Helpers;
 
 namespace StockTradingApp.Pages
 {
+
     public class IndexModel : PageModel
     {
         private readonly ILogger<IndexModel> _logger;
@@ -19,14 +20,16 @@ namespace StockTradingApp.Pages
         public List<string> SupportedTickers { get; set; }
         [BindProperty]
         public string Dates { get; set; }
-
+        [BindProperty]
+        public int balance { get; set; }
         public void OnGet()
         {
-            DataAccess da = new DataAccess("AAPL");
             SupportedTickers = new();
             SupportedTickers = DataAccess.GetSupportedTickers();
             Dates = DataAccess.GetRandomDate();
-
+            HttpContext.Session.SetInt32("cents", 1000000);
+            balance = 10000;
+            
 
         }
 
@@ -35,6 +38,17 @@ namespace StockTradingApp.Pages
             DataAccess da = new DataAccess(ticker);
             var data = da.BulkData.ToList();
             return new JsonResult(data);
+        }
+
+        public IActionResult OnPostMinusFunds([FromBody]int amnt)
+        {
+            var balance = HttpContext.Session.GetInt32("cents");
+
+            int newamnt = (int)(balance - amnt);
+            
+            HttpContext.Session.SetInt32("cents", newamnt);
+            return new JsonResult(newamnt);
+
         }
 
 

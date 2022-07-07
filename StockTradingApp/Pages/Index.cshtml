@@ -8,34 +8,35 @@
     <div class="row">
         <div class="col">
             <label for="Tickers" class="form-label">Tickers</label>
-            <input class="form-control" autocomplete="on" list="TickerData" id="Tickers" placeholder="Type to search..."/>
+            <input class="form-control" autocomplete="on" list="TickerData" id="Tickers" placeholder="Type to search..." />
             <datalist id="TickerData">
-                @foreach (var item in Model.SupportedTickers) {
-                    <option value = "@item"></option>
+                @foreach (var item in Model.SupportedTickers)
+                {
+                    <option value="@item"></option>
                 }
             </datalist>
         </div>
         <div class="col">
             <label for="DateStart" class="form-label">Starting Date</label>
-            <input class="form-control" autocomplete="on" list="DateStartData" id="DateStart" placeholder="Type to search..."/>
+            <input class="form-control" autocomplete="on" list="DateStartData" id="DateStart" placeholder="Type to search..." />
             <datalist id="DateStartData">
-                    <option value = "@Model.Dates"></option>
-                
+                <option value="@Model.Dates"></option>
+
             </datalist>
         </div>
         <div class="col">
             <label for="DateEnd" class="form-label">End Date</label>
-            <input class="form-control" autocomplete="on" list="DateEndData" id="DateEnd" placeholder="Type to search..."/>
+            <input class="form-control" autocomplete="on" list="DateEndData" id="DateEnd" placeholder="Type to search..." />
             <datalist id="DateEndData">
-                    <option value = "@Model.Dates"></option>
-                
+                <option value="@Model.Dates"></option>
+
             </datalist>
         </div>
 
-@*
-      <div>
+        @*
+        <div>
         <span>Current Balance   </span><span id="">$10,000.00</span>
-    </div>*@
+        </div>*@
 
         <div class="container mt-2">
             <label for="inputmoney" class="form-label mt-4">Amnt to invest</label>
@@ -46,34 +47,33 @@
             <button style="display:none" onclick="onButtonClickSell()" id="btnSell" class="btn btn-sm btn-success m-2 mt-4">Sell</button>
             <button style="display:none" onclick="onButtonClickHold()" id="btnHold" class="btn btn-sm btn-warning m-2 mt-4">Hold</button>
             <div class="mt-1 mx-auto">
-            <span>Current Balance   </span><span id="">$10,000.00</span>
+                <span>Current Balance   </span><span id="dollars">$@Model.balance
+                </span>
             </div>
         </div>
-    <p id="testFunction">_____</p>
+        <p id="testFunction">_____</p>
 
-    <div class="container w-100 mt-6" id="amnt">
-        
-
+        <div class="container w-100 mt-6" id="amnt">
+        </div>
     </div>
-</div>
 
 </div>
 
 
 
 @section Scripts
-{
+    {
     <script>
 
         function onButtonClickStart() {
-            
+
             var start = document.getElementById("btnStart");
-            
+
             var buy = document.getElementById("btnBuy");
             var sell = document.getElementById("btnSell");
             var hold = document.getElementById("btnHold");
             var quit = document.getElementById("btnQuit");
-            
+
             if (start.style.display === "inline-block") {
                 // turn off star button, then turn on quit and all the other buttons //
                 start.style.display = "none";
@@ -102,7 +102,7 @@
         }
 
         //Plotly Example:
-        //var trace1 = 
+        //var trace1 =
         //{
         //  x: [1, 2, 3, 4],
         //  y: [10, 15, 13, 17],
@@ -110,7 +110,7 @@
         //  type: 'scatter'
         //};
 
-        //var trace2 = 
+        //var trace2 =
         //{
         //  x: [2, 3, 4, 5],
         //  y: [16, 5, 11, 9],
@@ -118,7 +118,7 @@
         //  type: 'scatter'
         //};
 
-        //var trace3 = 
+        //var trace3 =
         //{
         //  x: [1, 2, 3, 4],
         //  y: [12, 9, 15, 12],
@@ -128,69 +128,90 @@
 
         //var data = [trace1, trace2, trace3];
         //Plotly.newPlot('results', data);
+        $('#dollars').click(function() {
+            var amnt = 525;
+            //proof of concept::::::
+            $.ajax
+                ({
+                    type: "POST",
+                    url: "./Index?handler=MinusFunds",
+                    beforeSend: (xhr) => {
+                        xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
+
+                    },
+                    contentType: "application/json; charset=utf-8",
+                    dataType: 'json',
+                    data: JSON.stringify(amnt, 'amnt'),
+                    success: (response) => {
+                        dollars = parseInt(parseInt(response) / 100);
+                        cents = parseInt(response) % 100;
+                        $('#dollars').text(`\$${dollars}.${cents}` )
+                        
+                    }
+
+
+                })
+        });
+
+
+        var plotData = [];
+        $('#Tickers').change(function() {
+            var msg = $(this).val()
+
+            $.ajax
+                ({
+                    type: "POST",
+                    url: "./Index?handler=GetTickerData",
+                    beforeSend: (xhr) => {
+                        xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
+
+                    },
+                    contentType: "application/json; charset=utf-8",
+                    dataType: 'json',
+                    data: JSON.stringify(msg, 'ticker'),
+                    success: (message) => {
+                        plotData = message
+                        displayGraph(plotData)
+                    }
+
+
+                })
+        });
+
+        displayGraph = (data) => {
+            var xx = []
+            for (var i of data) {
+                xx.push(i.date)
+            }
+            var yy = []
+            console.log(data)
+            for (var i of data) {
+                yy.push(i['open'])
+            }
+            console.log(xx)
 
 
 
-var plotData = [];
-$('#Tickers').change( function() 
-{
-    var msg = $(this).val()
-   
-    $.ajax
-        ({
-            type: "POST",
-            url: "./Index?handler=GetTickerData",
-            beforeSend: (xhr) => {
-                xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
+            var trace1 = {
+                x: xx,
+                y: yy,
+                type: 'scatter',
+                mode: 'lines',
 
-            },
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            data: JSON.stringify(msg, 'ticker'),
-            success: (message) => {
-                plotData = message
-                displayGraph(plotData)
+            };
+            var data = [trace1]
+
+            var layout = {
+                xaxis: {
+                    type: 'date',
+                    title: 'Dates'
+                },
+                yaxis: {
+                    title: 'Daily Open Price'
+                }
             }
 
-
-        })
-} );
-
-displayGraph = (data) => 
-{
-    var xx = []
-    for (var i of data) {
-        xx.push(i.date)
-    }
-    var yy = []
-    console.log(data)
-    for (var i of data) {
-        yy.push(i['open'])
-    }   
-        console.log(xx)
-
-
-
-    var trace1 = {
-        x: xx,
-        y: yy,
-        type: 'scatter',
-        mode: 'lines',
-
-    };
-    var data = [ trace1 ]
-
-    var layout = {
-        xaxis: {
-            type: 'date',
-            title: 'Dates'
-        },
-        yaxis: {
-            title: 'Daily Open Price'
+            Plotly.newPlot('amnt', data, layout)
         }
-    }
-
-    Plotly.newPlot('amnt', data, layout)
-}
     </script>
 }
