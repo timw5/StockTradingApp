@@ -22,7 +22,6 @@ namespace StockTradingApp.Helpers
 
         public decimal GetOpen_Price(string date)
         {
-
             return BulkData.Where(x => x.date == date).Select(x => x.open).First();
         }
 
@@ -102,6 +101,19 @@ namespace StockTradingApp.Helpers
         {
             DateTime result = DateTime.ParseExact(d, "yyyy-MM-dd", CultureInfo.InvariantCulture);
             return result;
+        }
+
+        public static string GetRandomDate()
+        {
+            sliceofbreadContext Conn = new();
+            DbSet<StockData> db = Conn.StockData;
+            Random rand = new Random();
+            int count = db.Count();
+            int random = rand.Next(0, count);
+            return db.Where(x => x.ID == random).Select(x => x.date).First();
+
+
+
         }
 
 

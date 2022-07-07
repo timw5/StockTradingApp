@@ -19,34 +19,36 @@
             <label for="DateStart" class="form-label">Starting Date</label>
             <input class="form-control" autocomplete="on" list="DateStartData" id="DateStart" placeholder="Type to search..."/>
             <datalist id="DateStartData">
-                @foreach (var item in Model.Dates) {
-                    <option value = "@item.ToShortDateString()"></option>
-                }
+                    <option value = "@Model.Dates"></option>
+                
             </datalist>
         </div>
         <div class="col">
             <label for="DateEnd" class="form-label">End Date</label>
             <input class="form-control" autocomplete="on" list="DateEndData" id="DateEnd" placeholder="Type to search..."/>
             <datalist id="DateEndData">
-                @foreach (var item in Model.Dates) {
-                    <option value = "@item.ToShortDateString()"></option>
-                }
+                    <option value = "@Model.Dates"></option>
+                
             </datalist>
         </div>
-    </div>
 
+@*
       <div>
         <span>Current Balance   </span><span id="">$10,000.00</span>
-    </div>
+    </div>*@
 
-    <div id="divButtonsInvest">
-        <button style="display:inline-block" onclick="onButtonClickStart()" id="btnStart">Start</button>
-        <button style="display:none" onclick="onButtonClickQuit()" id="btnQuit">Quit</button>
-        <button style="display:none" onclick="onButtonClickBuy()" id="btnBuy">Buy</button>
-        <button style="display:none" onclick="onButtonClickSell()" id="btnSell">Sell</button>
-        <button style="display:none" onclick="onButtonClickHold()" id="btnHold">Hold</button>
-    </div>
-
+        <div class="container mt-2">
+            <label for="inputmoney" class="form-label mt-4">Amnt to invest</label>
+            <input type="number" id="inputmoney" value="" class="form-control w-25" />
+            <button style="display:inline-block" onclick="onButtonClickStart()" id="btnStart" class=" btn btn-info btn-sm m-2 mt-4">Start</button>
+            <button style="display:none" onclick="onButtonClickQuit()" id="btnQuit" class="btn btn-sm btn-danger m-2 mt-4">Quit</button>
+            <button style="display:none" onclick="onButtonClickBuy()" id="btnBuy" class="btn btn-primary btn-sm m-2 mt-4">Buy</button>
+            <button style="display:none" onclick="onButtonClickSell()" id="btnSell" class="btn btn-sm btn-success m-2 mt-4">Sell</button>
+            <button style="display:none" onclick="onButtonClickHold()" id="btnHold" class="btn btn-sm btn-warning m-2 mt-4">Hold</button>
+            <div class="mt-1 mx-auto">
+            <span>Current Balance   </span><span id="">$10,000.00</span>
+            </div>
+        </div>
     <p id="testFunction">_____</p>
 
     <div class="container w-100 mt-6" id="amnt">

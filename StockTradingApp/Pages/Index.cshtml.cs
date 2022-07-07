@@ -18,17 +18,15 @@ namespace StockTradingApp.Pages
         [BindProperty]
         public List<string> SupportedTickers { get; set; }
         [BindProperty]
-        public List<DateTime> Dates { get; set; }
+        public string Dates { get; set; }
 
         public void OnGet()
         {
             DataAccess da = new DataAccess("AAPL");
-            var x = da.GetAvg_High();
-            var y = da.GetOpen_Price("2022-01-10");
             SupportedTickers = new();
             SupportedTickers = DataAccess.GetSupportedTickers();
-            Dates = new();
-            Dates = DataAccess.GetDates();
+            Dates = DataAccess.GetRandomDate();
+
 
         }
 
