@@ -79,10 +79,14 @@
                 </div>
                 <div class="row container w-100 pt-2 h-100 mb-4">
                     <h5>Stocks Owned:</h5>
-                    <div class="container" id="stocksOwned"></div>
+                    <div class="container" id="stocksOwned">
+
+                    </div>
                 </div>
             </div>
-            <div class="col-md-10 w-75 h-100" id="amnt"></div>
+            <div class="col-md-10 w-75 h-100" id="amnt">
+
+            </div>
         </div>
     </div>
 </div>
@@ -91,19 +95,20 @@
 
 
 @section Scripts
-    {
+{
     <script>
 
-        function onButtonClickStart() {
+        function onButtonClickStart() 
+        {
 
             var start = document.getElementById("btnStart");
-
             var buy = document.getElementById("btnBuy");
             var sell = document.getElementById("btnSell");
             var hold = document.getElementById("btnHold");
             var quit = document.getElementById("btnQuit");
 
-            if (start.style.display === "inline-block") {
+            if (start.style.display === "inline-block") 
+            {
                 // turn off star button, then turn on quit and all the other buttons //
                 start.style.display = "none";
                 quit.style.display = "inline-block";
@@ -114,144 +119,128 @@
             }
         }
 
-        function onButtonClickQuit() {
+        function onButtonClickQuit() 
+        {
             document.getElementById("testFunction").innerHTML = "QUIT BUTTON";
         }
 
         function onButtonClickBuy() {
             var amnt = $('#inputmoney').val()
             var ticker = $('#Tickers').val()
-            if (amnt < 0 || amnt == null || amnt == undefined || amnt == "") {
+            if (amnt < 0 || amnt == null || amnt == undefined || amnt == "") 
+            {
                 $('#inputmoney').addClass('border')
                 $('#inputmoney').addClass('border-danger')
                 $('#inputmoney').attr("placeholder", "How much??")
             }
-            else if (ticker == null || ticker == undefined || ticker == "") {
+            else if (ticker == null || ticker == undefined || ticker == "") 
+            {
                 $('#Tickers').addClass('border')
                 $('#Tickers').addClass('border-danger')
                 $('#Tickers').attr("placeholder", "Pick a stock to buy or Investigate!")
 
 
             }
-            else {
-                if (amnt.toString().indexOf('.') > 0) {
+            else 
+            {
+                if (amnt.toString().indexOf('.') > 0) 
+                {
                     var cents = parseInt(amnt.toString().split('.')[1]);
                     var dollars = parseInt(parseInt((amnt % 100)));
                     var totalCents = dollars * 100 + cents;
                 }
-                else {
+                else 
+                {
                     var totalCents = amnt*100
                 }
-                console.log('Dollars ', dollars, '   cents ', cents)
+
                 $('#inputmoney').removeClass('border')
                 $('#inputmoney').removeClass('border-danger')
                 $('#inputmoney').removeAttr("placeholder")
                 $('#Tickers').removeClass('border')
                 $('#Tickers').removeClass('border-danger')
                 $('#Tickers').removeAttr("placeholder")
+
                 const data = { 'amnt': totalCents.toString(), 'ticker': ticker }
+
                 $.ajax
-                    ({
-                        type: "POST",
-                        url: "./Index?handler=MinusFunds",
-                        beforeSend: (xhr) => {
-                            xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
+                ({
+                    type: "POST",
+                    url: "./Index?handler=MinusFunds",
+                    beforeSend: (xhr) => 
+                    {
+                        xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
+                    },
+                    contentType: "application/json; charset=utf-8",
+                    dataType: 'json',
+                    data: JSON.stringify(data),
+                    success: (response) => 
+                    {
+                        dollars = parseInt(parseInt(response) / 100);
+                        cents = parseInt(response) % 100;
+                        $('#dollars').text(`\$${dollars}.${cents}`)
+                        $('#stocksOwned').append(`<div>${ticker} : \$${amnt}  </div>`)
+                        $('#Tickers').val("")
+                        $('#inputmoney').val("")
+                    }
 
-                        },
-                        contentType: "application/json; charset=utf-8",
-                        dataType: 'json',
-                        data: JSON.stringify(data),
-                        success: (response) => {
-                            dollars = parseInt(parseInt(response) / 100);
-                            cents = parseInt(response) % 100;
-                            $('#dollars').text(`\$${dollars}.${cents}`)
-                            $('#stocksOwned').append(`<div>${ticker} : \$${amnt}  </div>`)
-                            $('#Tickers').val("")
-                            $('#inputmoney').val("")
-                        }
-
-                    })
-
-
-
-
+                })
             }
         }
 
-        function onButtonClickSell() {
+        function onButtonClickSell() 
+        {
             document.getElementById("testFunction").innerHTML = "SELL BUTTON";
         }
 
-        function onButtonClickHold() {
+        function onButtonClickHold() 
+        {
             document.getElementById("testFunction").innerHTML = "HOLD BUTTON";
 
         }
 
-
-
-
-
-        //$('#dollars').click(function() {
-        //    var amnt = 525;
-        //    //proof of concept::::::
-        //    $.ajax
-        //        ({
-        //            type: "POST",
-        //            url: "./Index?handler=MinusFunds",
-        //            beforeSend: (xhr) => {
-        //                xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
-        //            },
-        //            contentType: "application/json; charset=utf-8",
-        //            dataType: 'json',
-        //            data: JSON.stringify(amnt, 'amnt'),
-        //            success: (response) => {
-        //                dollars = parseInt(parseInt(response) / 100);
-        //                cents = parseInt(response) % 100;
-        //                $('#dollars').text(`\$${dollars}.${cents}`)
-
-        //            }
-        //        })
-        //});
-
-
         var plotData = [];
-        $('#Tickers').change(function() {
+        $('#Tickers').change(function() 
+        {
             var msg = $(this).val()
 
             $.ajax
-                ({
-                    type: "POST",
-                    url: "./Index?handler=GetTickerData",
-                    beforeSend: (xhr) => {
-                        xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
-
-                    },
-                    contentType: "application/json; charset=utf-8",
-                    dataType: 'json',
-                    data: JSON.stringify(msg, 'ticker'),
-                    success: (message) => {
-                        plotData = message
-                        displayGraph(plotData)
-                    }
-
-
-                })
+            ({
+                type: "POST",
+                url: "./Index?handler=GetTickerData",
+                beforeSend: (xhr) => 
+                {
+                    xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
+                },
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                data: JSON.stringify(msg, 'ticker'),
+                success: (message) => 
+                {
+                    plotData = message
+                    displayGraph(plotData)
+                }
+            })
         });
 
-        displayGraph = (data) => {
+        displayGraph = (data) => 
+        {
             var xx = []
             var ticker = data[0]['ticker']
-            for (var i of data) {
+            for (var i of data) 
+            {
                 xx.push(i.date)
             }
             var yy = []
             console.log(data)
-            for (var i of data) {
+            for (var i of data) 
+            {
                 yy.push(i['open'])
             }
             console.log(xx)
 
-            var trace1 = {
+            var trace1 = 
+            {
                 x: xx,
                 y: yy,
                 type: 'scatter',
@@ -260,12 +249,15 @@
             };
             var data = [trace1]
 
-            var layout = {
-                xaxis: {
+            var layout = 
+            {
+                xaxis: 
+                {
                     type: 'date',
                     title: 'Dates'
                 },
-                yaxis: {
+                yaxis: 
+                {
                     title: 'Daily Open Price'
                 },
                 title: ticker
