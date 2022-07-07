@@ -5,10 +5,10 @@
 }
 @Html.AntiForgeryToken() @*Added anti-forgery token for ajax call*@
 <div class="container w-100 text-center">
-    <div class="row w-50 mx-auto">
-        <div class="col ml-4">
+    <div class="row w-50 mx-auto ">
+        <div class="container">
             <label for="Tickers" class="form-label">Tickers</label>
-            <input class="form-control" autocomplete="on" list="TickerData" id="Tickers" placeholder="Type to search..." />
+            <input class="form-control ml-4 pl-4" autocomplete="on" list="TickerData" id="Tickers" placeholder="Type to search..." />
             <datalist id="TickerData">
                 @foreach (var item in Model.SupportedTickers)
                 {
@@ -33,9 +33,17 @@
                         <div class="mt-4 mx-auto">
                             <hr class="mt-2" />
                             <span>
-                                Current Balance
+                                Current Balance:&nbsp;&nbsp;
                             </span>
                             <span id="dollars">
+                                $@Model.balance
+                            </span>
+                            <br />
+                            <br />
+                            <span>
+                                Total Assets:&nbsp;&nbsp;
+                            </span>
+                            <span id="assets">
                                 $@Model.balance
                             </span>
                         </div>
@@ -98,13 +106,22 @@
 
             }
             else {
+                if (amnt.toString().indexOf('.') > 0) {
+                    var cents = parseInt(amnt.toString().split('.')[1]);
+                    var dollars = parseInt(parseInt((amnt % 100)));
+                    var totalCents = dollars * 100 + cents;
+                }
+                else {
+                    var totalCents = amnt
+                }
+                console.log('Dollars ', dollars, '   cents ', cents)
                 $('#inputmoney').removeClass('border')
                 $('#inputmoney').removeClass('border-danger')
                 $('#inputmoney').removeAttr("placeholder")
                 $('#Tickers').removeClass('border')
                 $('#Tickers').removeClass('border-danger')
                 $('#Tickers').removeAttr("placeholder")
-                const data = { 'amnt': amnt, 'ticker': ticker }
+                const data = { 'amnt': totalCents.toString(), 'ticker': ticker }
                 $.ajax
                     ({
                         type: "POST",
@@ -121,7 +138,7 @@
                             cents = parseInt(response) % 100;
                             $('#dollars').text(`\$${dollars}.${cents}`)
                             $('#stocksOwned').append(`<div>${ticker} : \$${amnt}  </div>`)
-
+                            $('#Tickers').val("")
                             $('#inputmoney').val("")
                         }
 
@@ -146,27 +163,27 @@
 
 
 
-        $('#dollars').click(function() {
-            var amnt = 525;
-            //proof of concept::::::
-            $.ajax
-                ({
-                    type: "POST",
-                    url: "./Index?handler=MinusFunds",
-                    beforeSend: (xhr) => {
-                        xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
-                    },
-                    contentType: "application/json; charset=utf-8",
-                    dataType: 'json',
-                    data: JSON.stringify(amnt, 'amnt'),
-                    success: (response) => {
-                        dollars = parseInt(parseInt(response) / 100);
-                        cents = parseInt(response) % 100;
-                        $('#dollars').text(`\$${dollars}.${cents}`)
+        //$('#dollars').click(function() {
+        //    var amnt = 525;
+        //    //proof of concept::::::
+        //    $.ajax
+        //        ({
+        //            type: "POST",
+        //            url: "./Index?handler=MinusFunds",
+        //            beforeSend: (xhr) => {
+        //                xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
+        //            },
+        //            contentType: "application/json; charset=utf-8",
+        //            dataType: 'json',
+        //            data: JSON.stringify(amnt, 'amnt'),
+        //            success: (response) => {
+        //                dollars = parseInt(parseInt(response) / 100);
+        //                cents = parseInt(response) % 100;
+        //                $('#dollars').text(`\$${dollars}.${cents}`)
 
-                    }
-                })
-        });
+        //            }
+        //        })
+        //});
 
 
         var plotData = [];
@@ -195,6 +212,7 @@
 
         displayGraph = (data) => {
             var xx = []
+            var ticker = data[0]['ticker']
             for (var i of data) {
                 xx.push(i.date)
             }
@@ -221,10 +239,11 @@
                 },
                 yaxis: {
                     title: 'Daily Open Price'
-                }
+                },
+                title: ticker
             }
 
-            Plotly.newPlot('amnt', data, layout, {dragmode:'select', pad:'2', autosize:true, scrollZoom: true, displayModeBar: false, clickmode: 'select' });
+            Plotly.newPlot('amnt', data, layout, {dragmode:'select', pad:'2', autosize:true, scrollZoom: true, displayModeBar: false, clickmode: 'select', title: ticker });
         }
     </script>
 }
