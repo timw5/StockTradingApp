@@ -34,7 +34,10 @@
 
 
 @Html.AntiForgeryToken() @*Added anti-forgery token for ajax call*@
+
 <div class="container w-100">
+    <div class="hidden" style="display:none" display="none" id="randomDate">@Model.StartingDate</div>
+
     <div class=" container mx-auto w-50 text-start mb-2">
             <label for="Tickers" class="form-label">Tickers:</label>
             <input class="form-control ml-4 pl-4 w-50" autocomplete="on" list="TickerData" id="Tickers" placeholder="Type to search..." />
@@ -197,6 +200,7 @@
                         $('#stocksOwned').append(`<div>${ticker} : \$${amnt}  </div>`)
                         $('#Tickers').val("")
                         $('#inputmoney').val("")
+                        //fast foreward
                     }
 
                 })
@@ -218,7 +222,8 @@
         $('#Tickers').change(() =>
         {
             var ticker = $('#Tickers').val()
-
+            var date = $('#randomDate').text()
+            var data = { 'ticker': ticker, 'date': date }
             $.ajax
             ({
                 type: "POST",
@@ -229,7 +234,7 @@
                 },
                 contentType: "application/json; charset=utf-8",
                 dataType: 'json',
-                data: JSON.stringify(ticker, 'ticker'),
+                data: JSON.stringify(data),
                 success: (message) => 
                 {
                     plotData = message

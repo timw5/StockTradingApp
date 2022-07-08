@@ -108,9 +108,19 @@ namespace StockTradingApp.Helpers
             sliceofbreadContext Conn = new();
             DbSet<StockData> db = Conn.StockData;
             Random rand = new Random();
-            int count = db.Count();
+            DateTime six_months_ago = DateTime.Now.AddMonths(-6);
+            var dates = db.Select(x => x.date).Distinct().ToList();
+            var datesDateformat = new List<DateTime>();
+            foreach (var date in dates)
+            {
+                datesDateformat.Add(Str_To_date(date));
+            }
+            
+            var final = datesDateformat.Where(x => x >= six_months_ago).ToList();
+            int count = final.Count();
             int random = rand.Next(0, count);
-            return db.Where(x => x.ID == random).Select(x => x.date).First();
+            return final[random].ToString("yyyy-MM-dd");
+            
 
 
 

@@ -29,17 +29,22 @@ namespace StockTradingApp.Pages
             SupportedTickers = new();
             SupportedTickers = DataAccess.GetSupportedTickers();
             StartingDate = DataAccess.GetRandomDate();
+            HttpContext.Session.SetString("date", StartingDate);
             HttpContext.Session.SetInt32("cents", 1000000);
             balance = 10000;
             
-
+            
         }
-
-        public IActionResult OnPostGetTickerData([FromBody]string ticker)
+        
+        public IActionResult OnPostGetTickerData([FromBody]dynamic? data)
         {
+            var result= JsonSerializer.Deserialize<Dictionary<string, string>>(data);
+            string ticker = result["ticker"];
+            string date = result["date"];
             DataAccess da = new DataAccess(ticker);
-            var data = da.BulkData.ToList();
-            return new JsonResult(data);
+            var idx = da.BulkData.Where(x => x.date == date).Select(x => x.index).First();
+            var dat = da.BulkData.Where(x => x.index < idx && x.ticker == ticker);
+            return new JsonResult(dat);
         }
         
         public IActionResult OnPostMinusFunds([FromBody]dynamic? data)
