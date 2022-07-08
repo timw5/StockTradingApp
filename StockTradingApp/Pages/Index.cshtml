@@ -217,7 +217,7 @@
         var plotData = [];
         $('#Tickers').change(() =>
         {
-            var msg = $(this).val()
+            var ticker = $('#Tickers').val()
 
             $.ajax
             ({
@@ -229,7 +229,7 @@
                 },
                 contentType: "application/json; charset=utf-8",
                 dataType: 'json',
-                data: JSON.stringify(msg, 'ticker'),
+                data: JSON.stringify(ticker, 'ticker'),
                 success: (message) => 
                 {
                     plotData = message
