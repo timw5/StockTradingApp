@@ -29,6 +29,8 @@ namespace StockTradingApp.Pages
             SupportedTickers = new();
             SupportedTickers = DataAccess.GetSupportedTickers();
             StartingDate = DataAccess.GetRandomDate();
+            HttpContext.Session.Remove("date");
+            HttpContext.Session.Remove("cents");
             HttpContext.Session.SetString("date", StartingDate);
             HttpContext.Session.SetInt32("cents", 1000000);
             balance = 10000;
@@ -40,9 +42,10 @@ namespace StockTradingApp.Pages
         {
             var result= JsonSerializer.Deserialize<Dictionary<string, string>>(data);
             string ticker = result["ticker"];
+            string date_ = HttpContext.Session.GetString("date");
             string date = result["date"];
             DataAccess da = new DataAccess(ticker);
-            var idx = da.BulkData.Where(x => x.date == date).Select(x => x.index).First();
+           var idx = da.BulkData.Where(x => x.date == date_ && x.ticker == ticker).Select(x => x.index).First();
             var dat = da.BulkData.Where(x => x.index < idx && x.ticker == ticker);
             return new JsonResult(dat);
         }
@@ -53,10 +56,12 @@ namespace StockTradingApp.Pages
             var balance = HttpContext.Session.GetInt32("cents");
 
             int newamnt = (int)(balance - int.Parse(x["amnt"]));
-
+            var date = HttpContext.Session.GetString("date");
+            var dateFormat = DataAccess.Str_To_date(date);
+            var new_date = dateFormat.AddDays(7);
+            HttpContext.Session.SetString("date", new_date.ToString("yyyy-MM-dd"));
             HttpContext.Session.SetInt32("cents", newamnt);
             return new JsonResult(newamnt);
-
         }
 
 

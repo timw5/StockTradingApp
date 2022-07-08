@@ -138,7 +138,10 @@
 
         function onButtonClickQuit() 
         {
-            document.getElementById("testFunction").innerHTML = "QUIT BUTTON";
+            location.reload();
+            $.ajax({
+
+            })
         }
 
         function onButtonClickBuy() 
@@ -200,7 +203,8 @@
                         $('#stocksOwned').append(`<div>${ticker} : \$${amnt}  </div>`)
                         $('#Tickers').val("")
                         $('#inputmoney').val("")
-                        //fast foreward
+                        $('#Tickers').val(ticker)
+                        refreshGraph(t=true);
                     }
 
                 })
@@ -217,31 +221,39 @@
             document.getElementById("testFunction").innerHTML = "HOLD BUTTON";
 
         }
+    
 
-        var plotData = [];
-        $('#Tickers').change(() =>
-        {
-            var ticker = $('#Tickers').val()
-            var date = $('#randomDate').text()
-            var data = { 'ticker': ticker, 'date': date }
+    $('#Tickers').change(() => refreshGraph(t=true))
+
+    var plotData = [];
+
+    refreshGraph = (t) => 
+    {
+        var ticker = $('#Tickers').val()
+        var date = $('#randomDate').text()
+        var data = { 'ticker': ticker, 'date': date }
+        if (ticker == "" || ticker == null || ticker == undefined || ticker == " ") {
+            return
+        }
+        else {
             $.ajax
-            ({
-                type: "POST",
-                url: "./Index?handler=GetTickerData",
-                beforeSend: (xhr) => 
-                {
-                    xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
-                },
-                contentType: "application/json; charset=utf-8",
-                dataType: 'json',
-                data: JSON.stringify(data),
-                success: (message) => 
-                {
-                    plotData = message
-                    displayGraph(plotData)
-                }
-            })
-        });
+                ({
+                    type: "POST",
+                    url: "./Index?handler=GetTickerData",
+                    beforeSend: (xhr) => {
+                        xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
+                    },
+                    contentType: "application/json; charset=utf-8",
+                    dataType: 'json',
+                    data: JSON.stringify(data),
+                    success: (message) => {
+                        plotData = message
+                        displayGraph(plotData)
+                    }
+                })
+        }
+    };
+
 
         displayGraph = (data) => 
         {
