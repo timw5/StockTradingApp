@@ -9,10 +9,16 @@
     TODO:
 
         * Make random day AT LEAST 6 months old
+        -Tim
+            --Done
 
         * Change Graph to only display dates before "random date"
+        -Tim
+            --Done
 
         * Once a user purchases a stock, timewarp one week, get new graph data
+        -Tim
+            --Done
 
         * Update Total Assets as time changes
 
@@ -20,15 +26,19 @@
         *   * - this is almost done, we just need to add 2 other methods for the user to decide how much stock to purchase
         *   * - draggable pie chart, slider, (Textbox is done)
         *   * - All 3 need to update at the same time,
-                if the user enters in the textbox then the slider, and pie chart updates, 
+                if the user enters in the textbox then the slider, and pie chart updates,
                 if the user uses the slider, then the textbox, and pie chart updates
                 if the user uses the pie chart, then the text box, and slider updates
 
         * On sell, use swal, or something to let the user decide how much of that stock they want to sell
 
         * On Hold, just timewarp, no buy or sell occurs
+        -Tim
+            --Done
 
         * On quit, sell all stocks, display overall gain or loss, and elapse period of time
+        -Tim
+            --Quit just refreshes the page, we need the other features
 
 ***********************************************************************************************************************@
 
@@ -39,14 +49,19 @@
     <div class="hidden" style="display:none" display="none" id="randomDate">@Model.StartingDate</div>
 
     <div class=" container mx-auto w-50 text-start mb-2">
-            <label for="Tickers" class="form-label">Tickers:</label>
-            <input class="form-control ml-4 pl-4 w-50" autocomplete="on" list="TickerData" id="Tickers" placeholder="Type to search..." />
-            <datalist id="TickerData">
-                @foreach (var item in Model.SupportedTickers)
+        <label for="Tickers" class="form-label">Tickers:</label>
+        <input class="form-control ml-4 pl-4 w-50" autocomplete="on" list="TickerData" id="Tickers" placeholder="Type to search..." />
+        <datalist id="TickerData">
+            @{
+                if (Model.SupportedTickers != null)
                 {
-                    <option value="@item"></option>
+                    foreach (var item in Model.SupportedTickers)
+                    {
+                        <option value="@item"></option>
+                    }
                 }
-            </datalist>
+            }
+        </datalist>
     </div>
 
     <div class="container mt-2 text-center">
@@ -56,7 +71,7 @@
                     <div class="col border-bottom pb-4 mb-2">
 
                         <label for="inputmoney" class="form-label mt-4 ">Amnt to invest</label>
-                        <input type="number" id="inputmoney" value="" class="form-control w-50 mx-auto" placeholder="" />
+                        <input type="number" id="inputmoney" value="" step=".01" pattern="^\d*(\.\d{0,2})?$" class="form-control w-50 mx-auto" placeholder="" />
 
                         <button style="display:inline-block" onclick="onButtonClickStart()" id="btnStart" class=" btn btn-info btn-sm m-2 mt-4">Start</button>
                         <button style="display:none" onclick="onButtonClickQuit()" id="btnQuit" class="btn btn-sm btn-danger m-2 mt-4">Quit</button>
@@ -95,14 +110,12 @@
                     <h5>Stocks Owned:</h5>
 
                     <div class="container" id="stocksOwned">
-
                     </div>
 
                 </div>
             </div>
 
             <div class="col-md-10 w-75 h-100" id="amnt">
-
             </div>
         </div>
     </div>
@@ -112,20 +125,25 @@
 
 
 @section Scripts
-{
+    {
     <script>
 
-        function onButtonClickStart() 
-        {
+        //Global Variables *********************************************************************
+        var plotData = [];
 
+
+
+        //Functions/Handlers *******************************************************************
+
+
+        function onButtonClickStart() {
             var start = document.getElementById("btnStart");
             var buy = document.getElementById("btnBuy");
             var sell = document.getElementById("btnSell");
             var hold = document.getElementById("btnHold");
             var quit = document.getElementById("btnQuit");
 
-            if (start.style.display === "inline-block") 
-            {
+            if (start.style.display === "inline-block") {
                 // turn off star button, then turn on quit and all the other buttons //
                 start.style.display = "none";
                 quit.style.display = "inline-block";
@@ -136,43 +154,34 @@
             }
         }
 
-        function onButtonClickQuit() 
-        {
-            location.reload();
-            $.ajax({
 
-            })
+        function onButtonClickQuit() {
+            location.reload();
         }
 
-        function onButtonClickBuy() 
-        {
+
+        function onButtonClickBuy() {
             var amnt = $('#inputmoney').val()
             var ticker = $('#Tickers').val()
-            if (amnt < 0 || amnt == null || amnt == undefined || amnt == "") 
-            {
+
+            if (amnt < 0 || amnt == null || amnt == undefined || amnt == "" || amnt == " ") {
                 $('#inputmoney').addClass('border')
                 $('#inputmoney').addClass('border-danger')
                 $('#inputmoney').attr("placeholder", "How much??")
             }
-            else if (ticker == null || ticker == undefined || ticker == "") 
-            {
+            else if (ticker == null || ticker == undefined || ticker == "" || ticker == " ") {
                 $('#Tickers').addClass('border')
                 $('#Tickers').addClass('border-danger')
                 $('#Tickers').attr("placeholder", "Pick a stock to buy or Investigate!")
-
-
             }
-            else 
-            {
-                if (amnt.toString().indexOf('.') > 0) 
-                {
+            else {
+                if (amnt.toString().indexOf('.') > 0) {
                     var cents = parseInt(amnt.toString().split('.')[1]);
                     var dollars = parseInt(parseInt((amnt % 100)));
                     var totalCents = dollars * 100 + cents;
                 }
-                else 
-                {
-                    var totalCents = amnt*100
+                else {
+                    var totalCents = amnt * 100
                 }
 
                 $('#inputmoney').removeClass('border')
@@ -185,110 +194,114 @@
                 const data = { 'amnt': totalCents.toString(), 'ticker': ticker }
 
                 $.ajax
-                ({
-                    type: "POST",
-                    url: "./Index?handler=MinusFunds",
-                    beforeSend: (xhr) => 
-                    {
-                        xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
-                    },
-                    contentType: "application/json; charset=utf-8",
-                    dataType: 'json',
-                    data: JSON.stringify(data),
-                    success: (response) => 
-                    {
-                        dollars = parseInt(parseInt(response) / 100);
-                        cents = parseInt(response) % 100;
-                        $('#dollars').text(`\$${dollars}.${cents}`)
-                        $('#stocksOwned').append(`<div>${ticker} : \$${amnt}  </div>`)
-                        $('#Tickers').val("")
-                        $('#inputmoney').val("")
-                        $('#Tickers').val(ticker)
-                        refreshGraph(t=true);
-                    }
-
-                })
+                    ({
+                        type: "POST",
+                        url: "./Index?handler=MinusFunds",
+                        beforeSend: (xhr) => {
+                            xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
+                        },
+                        contentType: "application/json; charset=utf-8",
+                        dataType: 'json',
+                        data: JSON.stringify(data),
+                        success: (response) => {
+                            dollars = parseInt(parseInt(response) / 100);
+                            cents = parseInt(response) % 100;
+                            $('#dollars').text(`\$${dollars}.${cents}`)
+                            $('#stocksOwned').append(`<div>${ticker} : \$${amnt}  </div>`)
+                            $('#Tickers').val("")
+                            $('#inputmoney').val("")
+                            $('#Tickers').val(ticker)
+                            refreshGraph();
+                        }
+                    })
             }
         }
 
-        function onButtonClickSell() 
-        {
+        function onButtonClickSell() {
             document.getElementById("testFunction").innerHTML = "SELL BUTTON";
         }
 
-        function onButtonClickHold() 
-        {
-            document.getElementById("testFunction").innerHTML = "HOLD BUTTON";
-
+        function onButtonClickHold() {
+            timeWarp();
         }
-    
 
-    $('#Tickers').change(() => refreshGraph(t=true))
-
-    var plotData = [];
-
-    refreshGraph = (t) => 
-    {
-        var ticker = $('#Tickers').val()
-        var date = $('#randomDate').text()
-        var data = { 'ticker': ticker, 'date': date }
-        if (ticker == "" || ticker == null || ticker == undefined || ticker == " ") {
-            return
-        }
-        else {
+        timeWarp = () => {
             $.ajax
                 ({
                     type: "POST",
-                    url: "./Index?handler=GetTickerData",
+                    url: "./Index?handler=Timewarp",
                     beforeSend: (xhr) => {
                         xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
                     },
                     contentType: "application/json; charset=utf-8",
                     dataType: 'json',
-                    data: JSON.stringify(data),
-                    success: (message) => {
-                        plotData = message
-                        displayGraph(plotData)
+                    data: '',
+                    success: (response) => {
+                        refreshGraph();
                     }
                 })
         }
-    };
+
+        // Graph/DataVisualization Handlers ***********************************************************************
 
 
-        displayGraph = (data) => 
-        {
-            var xx = []
+        refreshGraph = (t) => {
+            var ticker = $('#Tickers').val()
+            var date = $('#randomDate').text()
+            var data = { 'ticker': ticker, 'date': date }
+            if (ticker == "" || ticker == null || ticker == undefined || ticker == " ") {
+                return
+            }
+            else {
+                $.ajax
+                    ({
+                        type: "POST",
+                        url: "./Index?handler=GetTickerData",
+                        beforeSend: (xhr) => {
+                            xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
+                        },
+                        contentType: "application/json; charset=utf-8",
+                        dataType: 'json',
+                        data: JSON.stringify(data),
+                        success: (message) => {
+                            plotData = message
+                            displayGraph(plotData)
+                        }
+                    })
+            }
+        };
+
+
+        displayGraph = (data) => {
+            var xvals = []
             var ticker = data[0]['ticker']
-            for (var i of data) 
-            {
-                xx.push(i.date)
+            for (var i of data) {
+                xvals.push(i.date)
             }
-            var yy = []
-            console.log(data)
-            for (var i of data) 
-            {
-                yy.push(i['open'])
-            }
-            console.log(xx)
 
-            var trace1 = 
+            var yvals = []
+            for (var i of data) {
+                yvals.push(i['open'])
+            }
+
+            var trace1 =
             {
-                x: xx,
-                y: yy,
+                x: xvals,
+                y: yvals,
                 type: 'scatter',
                 mode: 'lines',
-
             };
+
             var data = [trace1]
 
-            var layout = 
+            var layout =
             {
-                xaxis: 
+                xaxis:
                 {
                     type: 'date',
                     title: 'Dates'
                 },
-                yaxis: 
+                yaxis:
                 {
                     title: 'Daily Open Price'
                 },
@@ -296,7 +309,34 @@
                 title: ticker
             }
 
-            Plotly.newPlot('amnt', data, layout, {dragmode:'select', pad:'2', autosize:true, scrollZoom: true, displayModeBar: false, clickmode: 'select' });
+            Plotly.newPlot('amnt', data, layout, { dragmode: 'select', pad: '2', autosize: true, scrollZoom: true, displayModeBar: false, clickmode: 'select' });
         }
+
+
+
+        //Listeners************************************************************************
+
+
+        $('#Tickers').change(() => refreshGraph())
+
+
+        $(document).on('keydown', 'input[pattern]', function(e) {
+            var input = $(this);
+            var oldVal = input.val();
+            var regex = new RegExp(input.attr('pattern'), 'g');
+
+            setTimeout(function() {
+                var newVal = input.val();
+                if (!regex.test(newVal)) {
+                    input.val(oldVal);
+                }
+            }, 1);
+        });
+
+
+
+
+
+
     </script>
 }
