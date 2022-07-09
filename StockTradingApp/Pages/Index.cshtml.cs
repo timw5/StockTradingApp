@@ -66,7 +66,7 @@ namespace StockTradingApp.Pages
 
         public IActionResult OnPostMinusFunds([FromBody]dynamic? data)
         {
-            if(HttpContext.Session.Get("cents") is null || HttpContext.Session.Get("date") is null || data is null)
+            if(HttpContext.Session.Get("cents") is null || HttpContext.Session.Get("date") is null || data is null )
             {
                 return new JsonResult("");
             }
@@ -90,7 +90,7 @@ namespace StockTradingApp.Pages
                 decimal CurrentStockValue = quantity * prevclosePrice;
                 decimal PreviousStockValue = quantity * newclosePrice;
                 decimal netvalue = PreviousStockValue - CurrentStockValue;
-                decimal assets = (decimal)(newbalance / 100) + netvalue;
+                decimal assets = (decimal)(balance / 100) + netvalue;
 
                 HttpContext.Session.SetString("date", new_date.ToString("yyyy-MM-dd"));
                 HttpContext.Session.SetInt32("cents", newbalance);
