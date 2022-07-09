@@ -47,8 +47,8 @@
 
 @Html.AntiForgeryToken() @*Added anti-forgery token for ajax call*@
 
-<div class="container w-100">
-    <div class="hidden" style="display:none" display="none" id="randomDate">@Model.StartingDate</div>
+@*<div class="container w-100">
+*@    <div class="hidden" style="display:none" display="none" id="randomDate">@Model.StartingDate</div>
 
     <div class=" container mx-auto w-50 text-start mb-2">
         <label for="Tickers" class="form-label">Tickers:</label>
@@ -59,7 +59,7 @@
                 {
                     foreach (var item in Model.SupportedTickers)
                     {
-                        <option value="@item"></option>
+                                                                                                                                                                                                                                                <option value="@item"></option>
                     }
                 }
             }
@@ -121,8 +121,8 @@
             </div>
         </div>
     </div>
-</div>
-
+@*</div>
+*@
 
 
 
@@ -131,8 +131,8 @@
     <script>
 
         //Global Variables *********************************************************************
-        var plotData = [];
-
+        Window.plotData = [];
+        var PurchasedStockIDs = [];
 
 
         //Functions/Handlers *******************************************************************
@@ -192,27 +192,40 @@
                 $('#Tickers').removeClass('border')
                 $('#Tickers').removeClass('border-danger')
                 $('#Tickers').removeAttr("placeholder")
-                const data = { 'amnt': totalCents.toString(), 'ticker': ticker }
+                const data = { amnt : totalCents.toString(), ticker : ticker.toString() }
 
                 $.ajax
-                ({
-                    type: "POST",
-                    url: "./Index?handler=MinusFunds",
-                    beforeSend: (xhr) => {
-                        xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
-                    },
-                    contentType: "application/json; charset=utf-8",
-                    dataType: 'json',
-                    data: JSON.stringify(data),
-                    success: (response) => {
-                       
-                        var d = response['amnt'];
-                        var q = parseFloat(response['quantity']).toFixed(4);
-                        var a = parseFloat(response['assets']).toFixed(2);
-                        dollars = parseInt(parseInt(d) / 100);
-                        cents = parseInt(d) % 100;
+                    ({
+                        type: "POST",
+                        url: "./Index?handler=MinusFunds",
+                        beforeSend: (xhr) => {
+                            xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
+                        },
+                        contentType: "application/json; charset=utf-8",
+                        dataType: 'json',
+                        data: JSON.stringify(data),
+                        success: (response) => {
+
+                            var d = parseInt(response['amnt']);
+                            var q = parseFloat(response['quantity']).toFixed(4);
+                            var a = parseFloat(response['assets']).toFixed(2);
+                            var date = response['date'];
+                            dollars = parseInt(parseInt(d) / 100);
+                            cents = parseInt(d) % 100;
+                            var numStocks = Object.keys(PurchasedStockIDs).length
+                            var id = numStocks.toString();
+                            var stock = { id:id.toString(), date: date.toString(), ticker: ticker.toString(), amnt: amnt.toString(), quantity:q.toString() }
+                            PurchasedStockIDs.push(stock);
                         $('#dollars').text(`\$${dollars}.${cents}`)
-                        $('#stocksOwned').append(`<div class="text-start"><strong>${ticker}</strong> :<br/>&emsp;Amnt: \$${amnt}<br/>&emsp;Quantity: ${q}  </div><hr/>`)
+
+                        $('#stocksOwned').append(
+                            `<div id="${id}" class="text-start">
+                                <strong>${ticker}</strong> :<br/>
+                                &emsp;Amnt: \$${amnt}<br/>
+                                &emsp;Quantity: ${q}<br/>
+                                &emsp;Date: ${date}<br/>
+                            </div><hr/>`)
+
                         $('#assets').text(`\$${a}`)
                         $('#Tickers').val("")
                         $('#inputmoney').val("")
@@ -229,22 +242,31 @@
         }
 
         function onButtonClickHold() {
+            
             timeWarp();
-        }
 
+        }
+        
         timeWarp = () => {
+            
+            PurchasedStockIDs.forEach((x) => {
+                console.log(x)
+            })
+            const data = { id: PurchasedStockIDs[0].id, date: PurchasedStockIDs[0].date, ticker: PurchasedStockIDs[0].ticker, amnt: PurchasedStockIDs[0].amnt, quantity: PurchasedStockIDs[0].quantity }
             $.ajax
             ({
                 type: "POST",
                 url: "./Index?handler=Timewarp",
+                async: true,
                 beforeSend: (xhr) => {
                     xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
                 },
                 contentType: "application/json; charset=utf-8",
                 dataType: 'json',
-                data: '',
+                data: JSON.stringify(data),
                 success: (response) => {
                     refreshGraph();
+                    return response;
                 }
             })
         }
@@ -271,8 +293,8 @@
                     dataType: 'json',
                     data: JSON.stringify(data),
                     success: (message) => {
-                        plotData = message
-                        displayGraph(plotData)
+                        Window.plotData=message
+                        displayGraph(message)
                     }
                 })
             }
@@ -318,7 +340,6 @@
 
             Plotly.newPlot('amnt', data, layout, { dragmode: 'select', pad: '2', autosize: true, scrollZoom: true, displayModeBar: false, clickmode: 'select' });
         }
-
 
 
         //Listeners************************************************************************
