@@ -27,7 +27,7 @@
 
         * On sell, use swal, or something to let the user decide how much of that stock they want to sell
 
-        *Add check for when the balance = 0, don't let the user buy again
+        * Add check for when the balance = 0, don't let the user buy again
 
         * On Buy
         *   * - this is almost done, we just need to add 1 more method for the user to decide how much stock to purchase
@@ -57,7 +57,7 @@
                 {
                     foreach (var item in Model.SupportedTickers)
                     {
-                                                                                                                                                                                                                                                                                                                                                                                    <option value="@item"></option>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <option value="@item"></option>
                     }
                 }
             }
@@ -78,7 +78,7 @@
                         <label for="inputmoney" class="form-label mt-4 ">Amnt to invest</label>
                         <input type="number" id="inputmoney" value="" step=".01" pattern="^\d*(\.\d{0,2})?$" class="form-control w-50 mx-auto" placeholder="" />
                         <input type="range" id="inputmoneyslider" value="0" ondrag="this.nextElementSibling.value = this.value" step="1" min="0" max="10000" class="form-range w-50 mx-auto" placeholder="" oninput="this.previousElementSibling.value = this.value"/><br />
-
+                        <canvas id="piechart"></canvas>
                         <button style="display:inline-block" onclick="onButtonClickStart()" id="btnStart" class=" btn btn-info btn-sm m-2 mt-4">Start</button>
                         <button style="display:none" onclick="onButtonClickQuit()" id="btnQuit" class="btn btn-sm btn-danger m-2 mt-4">Quit</button>
                         <button style="display:none" onclick="onButtonClickBuy()" id="btnBuy" class="btn btn-primary btn-sm m-2 mt-4">Buy</button>
@@ -113,7 +113,7 @@
                 </div>
                 <div class="container w-100 pt-2 h-100 mb-4">
 
-                    <h5>Stocks Owned:</h5>
+                    <h5>Purchase History:</h5>
                     <hr/>
                     <div class="container w-100 text-start" id="stocksOwned">
                     </div>
@@ -133,11 +133,14 @@
 @section Scripts
     {
     <script src='~/lib/limonte-sweetalert2/sweetalert2.all.min.js'></script>
+    <script src="~/lib/Draggable-Pie-Chart/draggable-piechart-jquery.js"></script>
+    <script src="~/lib/Draggable-Pie-Chart/draggable-piechart.js"></script>
     <script>
 
         //Global Variables *********************************************************************
         Window.plotData = [];
         var PurchasedStockIDs = [];
+var currentStocksOwned = new Map();
 
 
         //Functions/Handlers *******************************************************************
@@ -241,12 +244,30 @@
                             var id = numStocks.toString();
                             var stock = { id:id.toString(), date: date.toString(), ticker: ticker.toString(), amnt: amnt.toString(), quantity:q.toString() }
                             PurchasedStockIDs.push(stock);
+                            var ownedStock = { ticker: ticker, shares: q };
+                            
+
+                            //logic to add shares to an existing stock in our map (currentStocksOwned)
+
+                            if (currentStocksOwned.has(ticker.toString())) {
+                                var newVal = parseFloat(currentStocksOwned.get(ticker.toString())) + parseFloat(q);
+                                currentStocksOwned.set(ticker.toString(), newVal);
+                            }
+                            else {
+                                currentStocksOwned.set(ticker.toString(), q.toString());
+                                console.log(currentStocksOwned.get(ticker.toString()))
+                            }
+
+                            currentStocksOwned.forEach((value, key)=> console.log(value, key))
+
+
+
+
                         $('#dollars').text(`\$${dollars}.${cents}`)
 
                         $('#stocksOwned').append(
                             `<div id="${id}" class="text-start">
                                 <strong>${ticker}</strong> :<br/>
-                                &emsp;Amnt: \$${amnt}<br/>
                                 &emsp;Quantity: ${q}<br/>
                                 &emsp;Date: ${date}<br/>
                             </div><hr/>`)
@@ -269,18 +290,18 @@
 
         }
 
-        function onButtonClickHold() {
-            
+        function onButtonClickHold() 
+        { 
             timeWarp();
-
         }
-        
-        timeWarp = () => {
 
-            
-
+        timeWarp = () => 
+        {
+            //Object{ data:[{stock1}, {stock2},] }
 
             const data = []
+            //[] -> list
+            //{ } -> object
             PurchasedStockIDs.forEach((x) => {
                 data.push({ id: x['id'], date: x['date'], ticker: x['ticker'], amnt: x['amnt'], quantity: x['quantity'] });
             })
@@ -387,6 +408,27 @@
             return;
         }
 
+
+
+        var data = [
+	        { angle: 0, format: { color: "#2665da", label: 'Amount to invest'}, collapsed: false },
+	        { angle: Math.PI, format: { color: "#6dd020", label: 'Balance'}, collapsed: false }];
+
+        var newPie = new DraggablePiechart({
+	                    canvas: document.getElementById('piechart'), 
+	                    onchange: onPieChartChange,
+                        data: data
+                    });
+
+        function onPieChartChange(piechart) {
+	        // get the percentage for the first slice
+	        var firstPercentage = piechart.getSliceSizePercentage(0);
+            
+            
+	
+	        // get all percentages
+	        var percentages = piechart.getAllSliceSizePercentages();
+}
 
         //Listeners************************************************************************
 

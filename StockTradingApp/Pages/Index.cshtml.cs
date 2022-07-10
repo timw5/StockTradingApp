@@ -66,6 +66,7 @@ namespace StockTradingApp.Pages
             }
         }
 
+        //buy
         public IActionResult OnPostMinusFunds([FromBody]dynamic? data)
         {
             if(HttpContext.Session.Get("cents") is null || HttpContext.Session.Get("date") is null || data is null)
@@ -103,7 +104,7 @@ namespace StockTradingApp.Pages
                 decimal CurrentStockValue = quantity * newclosePrice;
                 decimal PreviousStockValue = quantity * prevclosePrice;
                 decimal Net = CurrentStockValue - PreviousStockValue;
-                
+                amnt = newclosePrice * quantity;
                 
                 decimal assets = (decimal)CurrentStockValue + (decimal)(newbalance)/(decimal)100.0;
                 
@@ -154,17 +155,13 @@ namespace StockTradingApp.Pages
                 var myObj = JsonConvert.DeserializeObject<Root>(x[1].Key);
 
                 decimal CurrentValueOfAllStocks = 0;
-                decimal PreviousValueOfAllStocks = 0;
                 foreach (Data d in myObj.data)
                 {
                     var temp = new DataAccess(d.ticker);
-                    var prevclosePrice = temp.GetClose_Price(d.date);
                     var quantity = decimal.Parse(d.quantity);
                     var ClosePrice = temp.GetClose_Price(date);
                     CurrentValueOfAllStocks += quantity * ClosePrice;
-                    PreviousValueOfAllStocks += quantity * prevclosePrice;
                 }
-                decimal net = CurrentValueOfAllStocks - PreviousValueOfAllStocks;
                 decimal assets = (decimal)CurrentValueOfAllStocks + (decimal)(balance)/(decimal)100;
                 int assetsCents = (int)(assets * 100);
                 HttpContext.Session.SetInt32("Assets", assetsCents);
