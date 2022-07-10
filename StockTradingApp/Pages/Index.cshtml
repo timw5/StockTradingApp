@@ -16,7 +16,7 @@
         -Tim
             --Done
 
-        * Once a user purchases a stock, timewarp one week, get new graph data
+        * Once a user purchases a stock, timewarp one week, get new graph data 
         -Tim
             --Done
 
@@ -24,23 +24,23 @@
         -Tim
             --Done
 
+
+        * On sell, use swal, or something to let the user decide how much of that stock they want to sell
+
+        *Add check for when the balance = 0, don't let the user buy again
+
         * On Buy
         *   * - this is almost done, we just need to add 2 other methods for the user to decide how much stock to purchase
-        *   * - draggable pie chart, slider, (Textbox is done)
+        *   * - draggable pie chart, slider, or something else (Textbox is done)
         *   * - All 3 need to update at the same time,
                 if the user enters in the textbox then the slider, and pie chart updates,
                 if the user uses the slider, then the textbox, and pie chart updates
                 if the user uses the pie chart, then the text box, and slider updates
 
-        * On sell, use swal, or something to let the user decide how much of that stock they want to sell
+        
 
-        * On Hold, just timewarp, no buy or sell occurs
-        -Tim
-            --Done
 
-        * On quit, sell all stocks, display overall gain or loss, and elapse period of time
-        -Tim
-            --Done
+
 
 ***********************************************************************************************************************@
 
@@ -60,7 +60,7 @@
                 {
                     foreach (var item in Model.SupportedTickers)
                     {
-                                                                                                                                                                                                                                                                                                                                                                                <option value="@item"></option>
+                                                                                                                                                                                                                                                                                                                                                                                    <option value="@item"></option>
                     }
                 }
             }
@@ -80,6 +80,7 @@
 
                         <label for="inputmoney" class="form-label mt-4 ">Amnt to invest</label>
                         <input type="number" id="inputmoney" value="" step=".01" pattern="^\d*(\.\d{0,2})?$" class="form-control w-50 mx-auto" placeholder="" />
+                        <input type="range" id="inputmoneyslider" value="0" ondrag="this.nextElementSibling.value = this.value" step="1" min="0" max="10000" class="form-range w-50 mx-auto" placeholder="" oninput="this.previousElementSibling.value = this.value"/><br />
 
                         <button style="display:inline-block" onclick="onButtonClickStart()" id="btnStart" class=" btn btn-info btn-sm m-2 mt-4">Start</button>
                         <button style="display:none" onclick="onButtonClickQuit()" id="btnQuit" class="btn btn-sm btn-danger m-2 mt-4">Quit</button>
@@ -252,13 +253,15 @@
                                 &emsp;Quantity: ${q}<br/>
                                 &emsp;Date: ${date}<br/>
                             </div><hr/>`)
+                        $('#inputmoneyslider').attr('max', d/100)
+
                         //$('#date').text(date);
-                        $('#assets').text(`\$${a}`)
-                        $('#Tickers').val("")
+                        //$('#assets').text(`\$${a}`)
                         $('#inputmoney').val("")
-                        $('#Tickers').val(ticker)
+                        $('#inputmoneyslider').val(0)
+                        //$('#Tickers').val(ticker)
                         timeWarp();
-                        refreshGraph();
+                        //refreshGraph();
                     }
                 })
             }
@@ -407,7 +410,9 @@
             }, 1);
         });
 
-
+    $('#inputmoney').change(() => {
+        $('#inputmoneyslider').val($('#inputmoney').text())
+    })
 
 
 

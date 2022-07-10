@@ -109,7 +109,7 @@ namespace StockTradingApp.Pages
                 
                 int assetsCents = (int)(assets * 100);
 
-                HttpContext.Session.SetString("date", new_date.ToString("yyyy-MM-dd"));
+                HttpContext.Session.SetString("date", date.ToString("yyyy-MM-dd"));
                 HttpContext.Session.SetInt32("cents", newbalance);
                 HttpContext.Session.SetInt32("Assets", assetsCents);
                 
@@ -142,6 +142,7 @@ namespace StockTradingApp.Pages
             }
             else
             {
+                TimeWarp();
                 var balance = HttpContext.Session.GetInt32("cents");
                 var PrevAssets = HttpContext.Session.GetInt32("Assets")/100;
                 var date = HttpContext.Session.GetString("date");
@@ -167,7 +168,6 @@ namespace StockTradingApp.Pages
                 decimal assets = (decimal)CurrentValueOfAllStocks + (decimal)(balance)/(decimal)100;
                 int assetsCents = (int)(assets * 100);
                 HttpContext.Session.SetInt32("Assets", assetsCents);
-                TimeWarp();
                 return new JsonResult(assets);
             }
 
