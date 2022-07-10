@@ -105,7 +105,7 @@ namespace StockTradingApp.Pages
                 decimal Net = CurrentStockValue - PreviousStockValue;
                 
                 
-                decimal assets = (decimal)Net + (decimal)balance/100;
+                decimal assets = (decimal)CurrentStockValue + (decimal)(newbalance)/(decimal)100.0;
                 
                 int assetsCents = (int)(assets * 100);
 
@@ -164,7 +164,7 @@ namespace StockTradingApp.Pages
                     PreviousValueOfAllStocks += quantity * prevclosePrice;
                 }
                 decimal net = CurrentValueOfAllStocks - PreviousValueOfAllStocks;
-                decimal assets = net + 10000;
+                decimal assets = (decimal)CurrentValueOfAllStocks + (decimal)(balance)/(decimal)100;
                 int assetsCents = (int)(assets * 100);
                 HttpContext.Session.SetInt32("Assets", assetsCents);
                 TimeWarp();

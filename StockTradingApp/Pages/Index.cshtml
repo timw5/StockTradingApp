@@ -60,7 +60,7 @@
                 {
                     foreach (var item in Model.SupportedTickers)
                     {
-                                                                                                                                                                                                                                                                                                                                                                            <option value="@item"></option>
+                                                                                                                                                                                                                                                                                                                                                                                <option value="@item"></option>
                     }
                 }
             }
@@ -234,7 +234,7 @@
                         success: (response) => {
 
                             var d = parseInt(response['amnt']);
-                            var q = parseFloat(response['quantity']).toFixed(4);
+                            var q = parseFloat(response['quantity']).toFixed(2);
                             var a = parseFloat(response['assets']).toFixed(2);
                             var date = response['date'];
                             dollars = parseInt(parseInt(d) / 100);
@@ -257,6 +257,7 @@
                         $('#Tickers').val("")
                         $('#inputmoney').val("")
                         $('#Tickers').val(ticker)
+                        timeWarp();
                         refreshGraph();
                     }
                 })
