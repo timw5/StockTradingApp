@@ -28,10 +28,10 @@ namespace StockTradingApp.Helpers
         public decimal GetClose_Price(string date)
         {
             string corrected = date;
-            if (BulkData.Where(x => x.date == date).Select(x => x.close).Count() == 0)
+            while (BulkData.Where(x => x.date == date).Select(x => x.close).Count() == 0)
             {
                 var d = Str_To_date(date);
-                d.AddDays(2);
+                d.AddDays(1);
                 corrected = d.ToString("yyyy-MM-dd");
             }
             return BulkData.Where(x => x.date == corrected).Select(x => x.close).First();
@@ -117,6 +117,7 @@ namespace StockTradingApp.Helpers
             DbSet<StockData> db = Conn.StockData;
             Random rand = new Random();
             DateTime six_months_ago = DateTime.Now.AddMonths(-7);
+            DateTime year_ago = six_months_ago.AddYears(-1);
             var dates = db.Select(x => x.date).Distinct().ToList();
             var datesDateformat = new List<DateTime>();
             foreach (var date in dates)
@@ -124,7 +125,7 @@ namespace StockTradingApp.Helpers
                 datesDateformat.Add(Str_To_date(date));
             }
             
-            var final = datesDateformat.Where(x => x <= six_months_ago).ToList();
+            var final = datesDateformat.Where(x => x <= six_months_ago && x>= year_ago).ToList();
             int count = final.Count();
             int random = rand.Next(0, count);
             return final[random].ToString("yyyy-MM-dd");
