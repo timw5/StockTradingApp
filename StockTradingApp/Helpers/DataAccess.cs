@@ -27,7 +27,15 @@ namespace StockTradingApp.Helpers
 
         public decimal GetClose_Price(string date)
         {
-            return BulkData.Where(x => x.date == date).Select(x => x.close).First();
+            string corrected = date;
+            if (BulkData.Where(x => x.date == date).Select(x => x.close).Count() == 0)
+            {
+                var d = Str_To_date(date);
+                d.AddDays(2);
+                corrected = d.ToString("yyyy-MM-dd");
+            }
+            return BulkData.Where(x => x.date == corrected).Select(x => x.close).First();
+
         }
 
         public decimal GetAdj_Close_Price(string date)

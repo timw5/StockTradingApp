@@ -59,7 +59,7 @@
                 {
                     foreach (var item in Model.SupportedTickers)
                     {
-                                                                                                                                                                                                                                                <option value="@item"></option>
+                                                                                                                                                                                                                                                                                                <option value="@item"></option>
                     }
                 }
             }
@@ -248,14 +248,19 @@
         }
         
         timeWarp = () => {
+
             
+
+
+            const data = []
             PurchasedStockIDs.forEach((x) => {
-                console.log(x)
+                data.push({ id: x['id'], date: x['date'], ticker: x['ticker'], amnt: x['amnt'], quantity: x['quantity'] });
             })
-            const data = { id: PurchasedStockIDs[0].id, date: PurchasedStockIDs[0].date, ticker: PurchasedStockIDs[0].ticker, amnt: PurchasedStockIDs[0].amnt, quantity: PurchasedStockIDs[0].quantity }
+
+            //{ id: PurchasedStockIDs[0]['id'], date: PurchasedStockIDs[0]['date'], ticker: PurchasedStockIDs[0]['ticker'], amnt: PurchasedStockIDs[0]['amnt'], quantity: PurchasedStockIDs[0]['quantity'] }
             $.ajax
             ({
-                type: "POST",
+                type: "GET",
                 url: "./Index?handler=Timewarp",
                 async: true,
                 beforeSend: (xhr) => {
@@ -263,10 +268,20 @@
                 },
                 contentType: "application/json; charset=utf-8",
                 dataType: 'json',
-                data: JSON.stringify(data),
+                data: JSON.stringify({"data":data}),
                 success: (response) => {
-                    refreshGraph();
-                    return response;
+                    if (response == "none") {
+                        refreshGraph();
+                        return;
+                    }
+                    else 
+                    {
+                        var a = parseFloat(response).toFixed(2);                        
+                        $('#assets').text(`\$${a}`)
+                        refreshGraph();
+                        return;
+                    }
+                    
                 }
             })
         }
@@ -274,7 +289,7 @@
         // Graph/DataVisualization Handlers ***********************************************************************
 
 
-        refreshGraph = (t) => {
+        refreshGraph = () => {
             var ticker = $('#Tickers').val()
             var date = $('#randomDate').text()
             var data = { 'ticker': ticker, 'date': date }
@@ -295,6 +310,7 @@
                     success: (message) => {
                         Window.plotData=message
                         displayGraph(message)
+                        return;
                     }
                 })
             }
@@ -339,6 +355,7 @@
             }
 
             Plotly.newPlot('amnt', data, layout, { dragmode: 'select', pad: '2', autosize: true, scrollZoom: true, displayModeBar: false, clickmode: 'select' });
+            return;
         }
 
 

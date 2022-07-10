@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using StockTradingApp.Helpers;
 using System.Text.Json;
 using Newtonsoft.Json;
+using System.Linq;
+
 namespace StockTradingApp.Pages
 {
 
@@ -66,7 +68,7 @@ namespace StockTradingApp.Pages
 
         public IActionResult OnPostMinusFunds([FromBody]dynamic? data)
         {
-            if(HttpContext.Session.Get("cents") is null || HttpContext.Session.Get("date") is null || data is null )
+            if(HttpContext.Session.Get("cents") is null || HttpContext.Session.Get("date") is null || data is null)
             {
                 return new JsonResult("");
             }
@@ -79,21 +81,38 @@ namespace StockTradingApp.Pages
                 Dictionary<string, string> response = new();
 
                 var date = DataAccess.Str_To_date(HttpContext.Session.GetString("date"));
+                decimal prevAssets = 0;
+                if (HttpContext.Session.Get("assets") is not null)
+                {
+                    prevAssets = (decimal)HttpContext.Session.GetInt32("assetsCents") / 100;
+                }
+                else
+                {
+                    prevAssets = 10000;
+                }
+
                 var new_date = date.AddDays(7);
                 var balance = HttpContext.Session.GetInt32("cents");
                 int newbalance = (int)(balance - int.Parse(x["amnt"]));
                 var prevclosePrice = stock.GetClose_Price(date.ToString("yyyy-MM-dd"));
                 var newclosePrice = stock.GetClose_Price(new_date.ToString("yyyy-MM-dd"));
+                var amnt = int.Parse(x["amnt"]);
 
                 //getting the updated asset value is tricky
-                decimal quantity = (Decimal.Parse(x["amnt"]) / prevclosePrice)/100;
-                decimal CurrentStockValue = quantity * prevclosePrice;
-                decimal PreviousStockValue = quantity * newclosePrice;
-                decimal netvalue = PreviousStockValue - CurrentStockValue;
-                decimal assets = (decimal)(balance / 100) + netvalue;
+                decimal quantity = ((Decimal.Parse(x["amnt"])/100) / prevclosePrice);
+                decimal CurrentStockValue = quantity * newclosePrice;
+                decimal PreviousStockValue = quantity * prevclosePrice;
+                decimal Net = CurrentStockValue - PreviousStockValue;
+                
+                
+                decimal assets = (decimal)Net + prevAssets;
+                
+                int assetsCents = (int)(assets * 100);
 
                 HttpContext.Session.SetString("date", new_date.ToString("yyyy-MM-dd"));
                 HttpContext.Session.SetInt32("cents", newbalance);
+                HttpContext.Session.SetInt32("Assets", assetsCents);
+                
 
                 response.Add("amnt", newbalance.ToString());
                 response.Add("quantity", quantity.ToString());
@@ -108,31 +127,50 @@ namespace StockTradingApp.Pages
             }
         }
         
-        public IActionResult OnPostTimewarp(string data)
+        public IActionResult OnGetTimewarp(dynamic? data)
         {
-            //not sure how to do this yet...
-            //var x = JsonConvert.DeserializeObject<IDictionary<string, string>>(data.ToString());
-            //JsonSerializer.Deserialize(msg, Type.GetTypeHandle(typeof(stock)));
-            //Console.WriteLine(msg);
-            TimeWarp();
-            //DataAccess stock = new(x["ticker"]);
-            //Dictionary<string, string> response = new();
+            //var mydata = JsonConvert.DeserializeObject<List<Root>>(data.ToString());
+            //Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(data);
 
-            //var date = DataAccess.Str_To_date(HttpContext.Session.GetString("date"));
-            //var new_date = date.AddDays(7);
-            //var balance = HttpContext.Session.GetInt32("cents");
-            //int newbalance = (int)(balance - int.Parse(x["amnt"]));
-            //var prevclosePrice = stock.GetClose_Price(date.ToString("yyyy-MM-dd"));
-            //var newclosePrice = stock.GetClose_Price(new_date.ToString("yyyy-MM-dd"));
+            if (HttpContext.Session.Get("Assets") is null)
+            {
+                TimeWarp();
+            }
+            else if(HttpContext.Session.Get("date") is null)
+            {
+                return new JsonResult("");
+            }
+            else
+            {
+                var PrevAssets = HttpContext.Session.GetInt32("Assets")/100;
+                var date = HttpContext.Session.GetString("date");
 
-            ////getting the updated asset value is tricky
-            //decimal quantity = (Decimal.Parse(x["amnt"]) / prevclosePrice) / 100;
-            //decimal CurrentStockValue = quantity * prevclosePrice;
-            //decimal PreviousStockValue = quantity * newclosePrice;
-            //decimal netvalue = PreviousStockValue - CurrentStockValue;
-            //decimal assets = (decimal)(newbalance / 100) + netvalue;
+                //very messy...idk how else to get the data from the post lol
+                var x = this.HttpContext.Request.Query.ToList();
 
-            return new JsonResult("");
+                //use ORM Deserialization for json Array
+                var myObj = JsonConvert.DeserializeObject<Root>(x[1].Key);
+
+                decimal CurrentValueOfAllStocks = 0;
+                decimal PreviousValueOfAllStocks = 0;
+                foreach (Data d in myObj.data)
+                {
+                    var temp = new DataAccess(d.ticker);
+                    var closePrice = temp.GetClose_Price(d.date);
+                    var quantity = decimal.Parse(d.quantity);
+                    CurrentValueOfAllStocks += quantity * closePrice;
+                    var prevClosePrice = temp.GetClose_Price(date);
+                    PreviousValueOfAllStocks += quantity * prevClosePrice;
+                }
+                decimal net = CurrentValueOfAllStocks - PreviousValueOfAllStocks;
+                decimal assets = net + (decimal)PrevAssets;
+                int assetsCents = (int)(assets * 100);
+                HttpContext.Session.SetInt32("Assets", assetsCents);
+                TimeWarp();
+                return new JsonResult(assets);
+            }
+
+            return new JsonResult("none");
 
         }
         
@@ -151,23 +189,19 @@ namespace StockTradingApp.Pages
         }
 
         [Serializable]
-        public class stock 
+        public class Data
         {
-            public stock() { }
-            public stock(string amnt, string date, string id, string quantity, string ticker)
-            {
-                this.id = id;
-                this.date = date;
-                this.ticker = ticker;
-                this.amnt = amnt;
-                this.quantity = quantity;
-            }
             public string id { get; set; }
             public string date { get; set; }
             public string ticker { get; set; }
             public string amnt { get; set; }
             public string quantity { get; set; }
+        }
+
+        public class Root
+        {
+            public List<Data> data { get; set; }
+        }
     }
-}
 
 }
