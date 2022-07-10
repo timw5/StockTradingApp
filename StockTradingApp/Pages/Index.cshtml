@@ -40,7 +40,7 @@
 
         * On quit, sell all stocks, display overall gain or loss, and elapse period of time
         -Tim
-            --Quit just refreshes the page, we need the other features
+            --Done
 
 ***********************************************************************************************************************@
 
@@ -50,20 +50,26 @@
 @*<div class="container w-100">
 *@    <div class="hidden" style="display:none" display="none" id="randomDate">@Model.StartingDate</div>
 
-    <div class=" container mx-auto w-50 text-start mb-2">
+    <div class=" row container mx-auto w-100 text-start mb-2">
+    <div class="col">
         <label for="Tickers" class="form-label">Tickers:</label>
-        <input class="form-control ml-4 pl-4 w-50" autocomplete="on" list="TickerData" id="Tickers" onkeydown="return /[a-z]/i.test(event.key)" type="search" placeholder="Type to search..." />
+        <input class="form-control ml-2 pl-4 w-50" autocomplete="on" list="TickerData" id="Tickers" onkeydown="return /[a-z]/i.test(event.key)" type="search" placeholder="Type to search..." />
         <datalist id="TickerData">
             @{
                 if (Model.SupportedTickers != null)
                 {
                     foreach (var item in Model.SupportedTickers)
                     {
-                                                                                                                                                                                                                                                                                                <option value="@item"></option>
+                                                                                                                                                                                                                                                                                                                                                                            <option value="@item"></option>
                     }
                 }
             }
         </datalist>
+        </div>    
+        <div class="col">
+            <b>CurrentDate:</b>
+        <div class="d-inline fw-bold" id="currdate">@Model.StartingDate</div>
+        </div>
     </div>
 
     <div class="container mt-2 text-center">
@@ -128,6 +134,7 @@
 
 @section Scripts
     {
+    <script src='~/lib/limonte-sweetalert2/sweetalert2.all.min.js'></script>
     <script>
 
         //Global Variables *********************************************************************
@@ -158,7 +165,27 @@
 
 
         function onButtonClickQuit() {
-            location.reload();
+            var assets = $('#assets').text().replace("$", '');
+            var currentAssets = parseFloat(assets);
+            var earnings = currentAssets - 10000.0;
+            var earnings = earnings.toFixed(2);
+            var msg = '';
+            if (earnings < 0) {
+                earnings = earnings * -1;
+                msg = `Earnings = -\$${earnings}`;
+            }
+            else {
+                msg = `Earnings = \$${earnings}`
+            }
+            swal.fire({
+                title: "Thanks for playing!",
+                text: msg
+            }).then(() => 
+            {
+
+                location.reload();
+
+            })
         }
 
 
@@ -225,7 +252,7 @@
                                 &emsp;Quantity: ${q}<br/>
                                 &emsp;Date: ${date}<br/>
                             </div><hr/>`)
-
+                        //$('#date').text(date);
                         $('#assets').text(`\$${a}`)
                         $('#Tickers').val("")
                         $('#inputmoney').val("")
@@ -323,6 +350,7 @@
             for (var i of data) {
                 xvals.push(i.date)
             }
+            $('#currdate').text(xvals[xvals.length-1])
 
             var yvals = []
             for (var i of data) {

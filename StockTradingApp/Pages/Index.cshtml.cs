@@ -105,7 +105,7 @@ namespace StockTradingApp.Pages
                 decimal Net = CurrentStockValue - PreviousStockValue;
                 
                 
-                decimal assets = (decimal)Net + prevAssets;
+                decimal assets = (decimal)Net + (decimal)balance/100;
                 
                 int assetsCents = (int)(assets * 100);
 
@@ -136,12 +136,13 @@ namespace StockTradingApp.Pages
             {
                 TimeWarp();
             }
-            else if(HttpContext.Session.Get("date") is null)
+            else if(HttpContext.Session.Get("date") is null || HttpContext.Session.Get("cents") is null)
             {
                 return new JsonResult("");
             }
             else
             {
+                var balance = HttpContext.Session.GetInt32("cents");
                 var PrevAssets = HttpContext.Session.GetInt32("Assets")/100;
                 var date = HttpContext.Session.GetString("date");
 
@@ -156,14 +157,14 @@ namespace StockTradingApp.Pages
                 foreach (Data d in myObj.data)
                 {
                     var temp = new DataAccess(d.ticker);
-                    var closePrice = temp.GetClose_Price(d.date);
+                    var prevclosePrice = temp.GetClose_Price(d.date);
                     var quantity = decimal.Parse(d.quantity);
-                    CurrentValueOfAllStocks += quantity * closePrice;
-                    var prevClosePrice = temp.GetClose_Price(date);
-                    PreviousValueOfAllStocks += quantity * prevClosePrice;
+                    var ClosePrice = temp.GetClose_Price(date);
+                    CurrentValueOfAllStocks += quantity * ClosePrice;
+                    PreviousValueOfAllStocks += quantity * prevclosePrice;
                 }
                 decimal net = CurrentValueOfAllStocks - PreviousValueOfAllStocks;
-                decimal assets = net + (decimal)PrevAssets;
+                decimal assets = net + 10000;
                 int assetsCents = (int)(assets * 100);
                 HttpContext.Session.SetInt32("Assets", assetsCents);
                 TimeWarp();

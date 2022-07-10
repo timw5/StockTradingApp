@@ -9,6 +9,11 @@
     {
       "library": "plotly.js@2.12.1",
       "destination": "wwwroot/lib/plotly.js/"
+    },
+    {
+      "provider": "cdnjs",
+      "library": "limonte-sweetalert2@11.4.20",
+      "destination": "wwwroot/limonte-sweetalert2/"
     }
   ]
 }
