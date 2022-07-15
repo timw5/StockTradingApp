@@ -57,7 +57,7 @@
                 {
                     foreach (var item in Model.SupportedTickers)
                     {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <option value="@item"></option>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <option value="@item"></option>
                     }
                 }
             }
@@ -125,6 +125,10 @@
             </div>
         </div>
     </div>
+
+
+
+    
 @*</div>
 *@
 
@@ -140,7 +144,7 @@
         //Global Variables *********************************************************************
         Window.plotData = [];
         var PurchasedStockIDs = [];
-var currentStocksOwned = new Map();
+        var currentStocksOwned = []
 
 
         //Functions/Handlers *******************************************************************
@@ -249,16 +253,16 @@ var currentStocksOwned = new Map();
 
                             //logic to add shares to an existing stock in our map (currentStocksOwned)
 
-                            if (currentStocksOwned.has(ticker.toString())) {
-                                var newVal = parseFloat(currentStocksOwned.get(ticker.toString())) + parseFloat(q);
-                                currentStocksOwned.set(ticker.toString(), newVal);
+
+                            if (currentStocksOwned.find(obj => obj["ticker"] = ticker.toString())) {
+                                var idx = currentStocksOwned.findIndex(obj => obj["ticker"] = ticker.toString());
+                                currentStocksOwned[idx]["quantity"] = parseFloat(currentStocksOwned[idx]["quantity"]) + parseFloat(q);
                             }
                             else {
-                                currentStocksOwned.set(ticker.toString(), q.toString());
-                                console.log(currentStocksOwned.get(ticker.toString()))
+                                var stockItem = {"ticker": ticker, "quantity": q}
+                                currentStocksOwned.push(stockItem);
                             }
 
-                            currentStocksOwned.forEach((value, key)=> console.log(value, key))
 
 
 
@@ -285,10 +289,101 @@ var currentStocksOwned = new Map();
             }
         }
 
-        function onButtonClickSell() {
+    function onButtonClickSell() {
             //document.getElementById("testFunction").innerHTML = "SELL BUTTON";
-
+        var Options = '';
+        var quantities = '';
+        for (let data of currentStocksOwned) 
+        {
+            var ticker = data['ticker'];
+            var quantity = data['quantity'];
+            Options += `<option name = ${ticker} value = ${quantity}> ${ticker}: Quantity Available: ${quantity}</option>`
         }
+        var html = 
+        `
+        <div class="form-floating mx-auto mb-4">
+            <select class="form-select" id="swal-input-ticker" name="s1">
+                <option selected>Select a ticker</option>
+                ${Options}
+                <span> </span>
+            </select>
+            <label for="#st1"> Stock </label>
+        </div>
+
+        <div class="input-group w-50 mx-auto">
+            <span class="input-group-text">Amount To Sell </span>
+            <input id="swal-input-Amount" type="number" min="0" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57" class="form-control">
+        </div>
+
+
+        `
+
+        const { value: transferdata } = await swal.fire
+        ({
+            title: 'Sell My Stock',
+            html : html,
+            showCancelButton: true,
+            confirmButtonText: 'Sell',
+            cancelButtonColor: '#d33',
+            confirmButtonColor: "#3085d6",
+            preConfirm: () => 
+            {
+                
+            }
+
+        })
+        .then((result) => {
+            $.ajax
+            ({
+                url: "./Index?handler=SellFunds"
+                data: JSON.stringify(result)
+                success: (response) => 
+                {
+                    $('#balance').val(response.newbalance);
+                    timeWarp();
+                }
+            })
+        })
+
+
+        updateNewBalance = () => 
+        {
+            //access the dom object to update the balance..
+        }
+
+
+
+            swal.fire({
+                title: 'Sell My Stock',
+                html: html, //Display a list of tickers owned
+                showCancelButton: true,
+                confirmButtonText: 'Sell',
+                cancelButtonColor: '#d33',
+                confirmButtonColor: "#3085d6",
+
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+                    swal.fire({
+                        title: 'Confirm',
+                        text: 'You are about to sell &emsp;&{ticker}',
+                        showCancelButton: true,
+                        confirmButtonText: 'Confirm',
+                        cancelButtonColor: '#d33',
+                        confirmButtonColor: "#3085d6"
+
+                    }).then((answer) => {
+                        if (answer.isConfirmed) {
+                            swal.fire({
+                                title: 'Success',
+                                text: 'You sold STOCK for VALUE.'
+                            })
+                        }
+                    })
+                }
+            })
+        }
+
 
         function onButtonClickHold() 
         { 

@@ -65,6 +65,13 @@ namespace StockTradingApp.Pages
                 return new JsonResult("");
             }
         }
+        
+
+        //TODO:
+        public IActionResult OnPostSellFunds([FromBody] dynamic? data)
+        {
+            //return the new balance
+        }
 
         //buy
         public IActionResult OnPostMinusFunds([FromBody]dynamic? data)
