@@ -57,7 +57,7 @@
                 {
                     foreach (var item in Model.SupportedTickers)
                     {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <option value="@item"></option>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <option value="@item"></option>
                     }
                 }
             }
@@ -237,6 +237,20 @@
                 $('#Tickers').removeClass('border')
                 $('#Tickers').removeClass('border-danger')
                 $('#Tickers').removeAttr("placeholder")
+                var strbal = $('#dollars').text()
+                var r = /\d+/;
+                var bal = parseFloat(strbal.match(r));
+
+                if (amnt > bal) 
+                {
+                    swal.fire({
+                        title: 'You Don\'t Have That much to Invest!',
+                        icon: 'error'
+                    })
+                    return;
+                }
+                
+
                 const data = { amnt : totalCents.toString(), ticker : ticker.toString() }
 
                 $.ajax
