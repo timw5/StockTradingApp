@@ -70,7 +70,38 @@ namespace StockTradingApp.Pages
         //TODO:
         public IActionResult OnPostSellFunds([FromBody] dynamic? data)
         {
-            //return the new balance
+            if (HttpContext.Session.Get("cents") is null || HttpContext.Session.Get("date") is null || data is null)
+            {
+                return new JsonResult("");
+            }
+            try
+            {
+                var result = JsonConvert.DeserializeObject<IDictionary<string, string>>(data.ToString());
+                var assets = HttpContext.Session.GetString("assets");
+                var balance = HttpContext.Session.GetInt32("cents");
+                //return the new balance
+                //quantity sold, ticker, new balance, current date
+                var ticker = result["ticker"];
+                var date = HttpContext.Session.GetString("date");
+                var quantity = result["quantity"];
+                var newQuantity = result["newQuantity"];
+                DataAccess da = new DataAccess(ticker);
+                var tempData = da.BulkData.Where(x => x.date == date).Select(x => x.close).FirstOrDefault();
+                var worth = tempData * decimal.Parse(quantity);
+                var newBalance = ((decimal)balance / 100) + worth;
+                HttpContext.Session.SetInt32("cents", (int)(newBalance * 100));
+                var response = new Dictionary<string, string>();
+                response.Add("qSold", quantity);
+                response.Add("ticker", ticker);
+                response.Add("newBalance", newBalance.ToString("C"));
+                response.Add("date", date);
+                return new JsonResult(response);
+            }
+            catch
+            {
+                return new JsonResult("");
+            }
+
         }
 
         //buy
