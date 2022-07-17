@@ -45,7 +45,7 @@ namespace StockTradingApp.Pages
         {
             if (HttpContext.Session.Get("date") is null || data is null)
             {
-                return new JsonResult("");
+                return new JsonResult("Error");
             }
             try
             {
@@ -62,7 +62,7 @@ namespace StockTradingApp.Pages
             }
             catch
             {
-                return new JsonResult("");
+                return new JsonResult("Error");
             }
         }
         
@@ -72,34 +72,45 @@ namespace StockTradingApp.Pages
         {
             if (HttpContext.Session.Get("cents") is null || HttpContext.Session.Get("date") is null || data is null)
             {
-                return new JsonResult("");
+                return new JsonResult("Error");
             }
             try
             {
                 var result = JsonConvert.DeserializeObject<IDictionary<string, string>>(data.ToString());
-                var assets = HttpContext.Session.GetString("assets");
+                var response = new Dictionary<string, string>();
+                var assets = HttpContext.Session.GetInt32("assets");
                 var balance = HttpContext.Session.GetInt32("cents");
+
+                if (balance is null || assets is null)
+                {
+                    return new JsonResult("Error");
+                }
                 //return the new balance
                 //quantity sold, ticker, new balance, current date
                 var ticker = result["ticker"];
+                DataAccess da = new DataAccess(ticker);
+
                 var date = HttpContext.Session.GetString("date");
                 var quantity = result["quantity"];
                 var newQuantity = result["newQuantity"];
-                DataAccess da = new DataAccess(ticker);
                 var tempData = da.BulkData.Where(x => x.date == date).Select(x => x.close).FirstOrDefault();
                 var worth = tempData * decimal.Parse(quantity);
+                var newassets = assets / 100.0m - worth;
                 var newBalance = ((decimal)balance / 100) + worth;
+                
                 HttpContext.Session.SetInt32("cents", (int)(newBalance * 100));
-                var response = new Dictionary<string, string>();
+                HttpContext.Session.SetInt32("assets", (int)(newassets * 100));
+                
                 response.Add("qSold", quantity);
                 response.Add("ticker", ticker);
                 response.Add("newBalance", newBalance.ToString("C"));
                 response.Add("date", date);
+
                 return new JsonResult(response);
             }
             catch
             {
-                return new JsonResult("");
+                return new JsonResult("Error");
             }
 
         }
@@ -108,7 +119,7 @@ namespace StockTradingApp.Pages
         {
             if(HttpContext.Session.Get("cents") is null || HttpContext.Session.Get("date") is null || data is null)
             {
-                return new JsonResult("");
+                return new JsonResult("Error");
             }
             try
             {
@@ -149,7 +160,7 @@ namespace StockTradingApp.Pages
 
                 HttpContext.Session.SetString("date", date.ToString("yyyy-MM-dd"));
                 HttpContext.Session.SetInt32("cents", newbalance);
-                HttpContext.Session.SetInt32("Assets", assetsCents);
+                HttpContext.Session.SetInt32("assets", assetsCents);
                 
 
                 response.Add("amnt", newbalance.ToString());
@@ -161,7 +172,7 @@ namespace StockTradingApp.Pages
             }
             catch
             {
-                return new JsonResult("");
+                return new JsonResult("Error");
             }
         }
         
@@ -170,7 +181,7 @@ namespace StockTradingApp.Pages
             //var mydata = JsonConvert.DeserializeObject<List<Root>>(data.ToString());
             //Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(data);
 
-            if (HttpContext.Session.Get("Assets") is null)
+            if (HttpContext.Session.Get("assets") is null)
             {
                 TimeWarp();
             }
@@ -182,7 +193,7 @@ namespace StockTradingApp.Pages
             {
                 TimeWarp();
                 var balance = HttpContext.Session.GetInt32("cents");
-                var PrevAssets = HttpContext.Session.GetInt32("Assets")/100;
+                var PrevAssets = HttpContext.Session.GetInt32("assets")/100;
                 var date = HttpContext.Session.GetString("date");
 
                 //very messy...idk how else to get the data from the post lol
@@ -201,7 +212,7 @@ namespace StockTradingApp.Pages
                 }
                 decimal assets = (decimal)CurrentValueOfAllStocks + (decimal)(balance)/(decimal)100;
                 int assetsCents = (int)(assets * 100);
-                HttpContext.Session.SetInt32("Assets", assetsCents);
+                HttpContext.Session.SetInt32("assets", assetsCents);
                 return new JsonResult(assets);
             }
 

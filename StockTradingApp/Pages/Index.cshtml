@@ -57,7 +57,7 @@
                 {
                     foreach (var item in Model.SupportedTickers)
                     {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <option value="@item"></option>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <option value="@item"></option>
                     }
                 }
             }
@@ -368,10 +368,15 @@
                     var ticker = response.ticker;
                     var q = response.qSold;
                     var d = response.newBalance;
+                    var r = /\d+/;
+                    var bal = parseFloat(strbal.match(d));
+                    var newBalance = response.newBalance
                     var date = response.date;
-                    var idx = currentStocksOwned.findIndex(obj => obj["ticker"] == ticker.toString());
+                    var idx = currentStocksOwned.findIndex(obj => obj["ticker"] == ticker);
                     currentStocksOwned[idx]["quantity"] = parseFloat(currentStocksOwned[idx]["quantity"]) - parseFloat(q);
                     $('#dollars').text(d);
+                    idx = PurchasedStockIDs.findIndex(obj => obj["ticker"] == ticker);
+                    PurchasedStockIDs[idx]["quantity"] = parseFloat( PurchasedStockIDs[idx]["quantity"]) - parseFloat(q);
                     timeWarp();
                     $('#stocksSold').append(
                         `<div class="text-start">
@@ -379,7 +384,7 @@
                             &emsp;Quantity: ${q}<br/>
                             &emsp;Date: ${date}<br/>
                         </div><hr/>`)
-                    $('#inputmoneyslider').attr('max', d)
+                    $('#inputmoneyslider').attr('max', bal)
                     return result;
                 }
             })
@@ -560,7 +565,7 @@
                 //newPie.radius = null
                 newPie.destroy();
                 newPie = null;
-            }            
+            }  
 
             var canvas = document.getElementById('piechart')
             var context = canvas.getContext('2d');
@@ -606,51 +611,49 @@
         });
 
 
-    $('#inputmoney').change(() => {
-        $('#inputmoneyslider').val($('#inputmoney').text())
+        
+        textChange = () => {
+        $('#inputmoneyslider').val($('#inputmoney').val())
+        $('#inputmoneyslider').trigger('change')
+            //onPieChartChange(newPie);
         //pi = 50%
         //2pi = 100%
-        var amountToInvest = parseFloat($('#inputmoney').val());
-        var tbal = $('#dollars').val()
-        var strbal = $('#dollars').text()
-        var r = /\d+/;
-        var bal = parseFloat(strbal.match(r));
+        //var amountToInvest = parseFloat($('#inputmoney').val());
+        //var strbal = $('#dollars').text()
+        //var r = /\d+/;
+        //var bal = parseFloat(strbal.match(r));
+        //var percentage = (amountToInvest / bal)*100;
 
-        var percentage = (amountToInvest / bal)*100;
-        var CF = 0.062831853071796;
-        var Newangle = percentage * CF;
+        //var CF = 0.062831853071796;
+        //var Newangle = percentage * CF;
+        ////$('#inputmoneyslider').val($('#inputmoney').val())
+        //newPie.moveAngle(0, Newangle);
 
-        var data = 
-        [
-            { angle: 0, format: { color: "#2665da", label: 'Amount to invest' }, collapsed: false },
-            { angle: Newangle, format: { color: "#6dd020", label: 'Balance' }, collapsed: false }
-        ];
-        DrawPiechart(data);
-    })
+    }
 
     function onPieChartChange(piechart) 
     {
-        
+
 	    // get the percentage for the first slice
 	    var amntPercentage = piechart.getSliceSizePercentage(0);
         var strbal = $('#dollars').text()
         var r = /\d+/;
         var bal = parseFloat(strbal.match(r));
         var amnt = Math.ceil((amntPercentage * bal)/100);
-        $('#inputmoneyslider').val(amnt);
-        $('#inputmoney').val(amnt);
+        //$('#inputmoneyslider').trigger('change');
+        //$('#inputmoney').trigger('change');
+
             
 	    // get all percentages
-	    var percentages = piechart.getAllSliceSizePercentages();
+	    //var percentages = piechart.getAllSliceSizePercentages();
     }
 
 
 
 
-    valueUpdated = () => {
+    SliderChange = () => {
 
-        var amountToInvest = parseFloat($('#inputmoney').val());
-        var tbal = $('#dollars').val()
+        var amountToInvest = parseFloat($('#inputmoneyslider').val());
         var strbal = $('#dollars').text()
         var r = /\d+/;
         var bal = parseFloat(strbal.match(r));
@@ -658,23 +661,30 @@
         var percentage = (amountToInvest / bal)*100;
         var CF = 0.062831853071796;
         var Newangle = percentage * CF;
+        newPie.minAngle = Newangle;
+        newPie.moveAngle(1, 0)
+        newPie.moveAngle(0,Newangle)
+        
+        $('#inputmoney').val($('#inputmoneyslider').val())
 
-        var data = 
-        [
-            { angle: 0, format: { color: "#2665da", label: 'Amount to invest' }, collapsed: false },
-            { angle: Newangle, format: { color: "#6dd020", label: 'Balance' }, collapsed: false }
-        ];
-        DrawPiechart(data);
-                
+        
+
+        //var data = 
+        //[
+        //    { angle: 0, format: { color: "#2665da", label: 'Amount to invest' }, collapsed: false },
+        //    { angle: Newangle, format: { color: "#6dd020", label: 'Balance' }, collapsed: false }
+        //];
+        //DrawPiechart(data);
+        //$('#inputmoneyslider').trigger("input")
+
+
     }
 
 
-
-
-    $('#inputmoneyslider').on('change', valueUpdated);
-
+    $('#inputmoney').on('change', textChange);
+    $('#inputmoneyslider').on('change', SliderChange);
 // Logs the value while the user is moving the slider
-    $('#inputmoneyslider').on('input', valueUpdated);
+    $('#inputmoneyslider').on('input', SliderChange);
 
 
 
