@@ -57,7 +57,7 @@
                 {
                     foreach (var item in Model.SupportedTickers)
                     {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <option value="@item"></option>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <option value="@item"></option>
                     }
                 }
             }
@@ -185,9 +185,19 @@
             else {
                 msg = `Earnings = \$${earnings}`
             }
+            var startingdate = $('#randomDate').text();
+            var enddate = $('#currdate').text();
+            var Dstartingdate = new Date(startingdate);
+            var Denddate = new Date(enddate);
+
+            var DateDiff =  Denddate.getTime() - Dstartingdate.getTime();
+            var diffinDays = DateDiff / (1000 * 3600 * 24)
+
+
+            msg += `<br \> Time Elapsed: ${diffinDays} days`;
             swal.fire({
                 title: "Thanks for playing!",
-                text: msg
+                html: msg
             }).then(() => 
             {
 
@@ -249,7 +259,7 @@
                             cents = parseInt(d) % 100;
                             var numStocks = Object.keys(PurchasedStockIDs).length
                             var id = numStocks.toString();
-                            var stock = { id:id.toString(), date: date.toString(), ticker: ticker.toString(), amnt: amnt.toString(), quantity:q.toString() }
+                            var stock = { id:id, date: date, ticker: ticker, amnt: amnt, quantity:q.toString() }
                             PurchasedStockIDs.push(stock);
                             var ownedStock = { ticker: ticker, shares: q };
                             
@@ -368,13 +378,11 @@
                     var ticker = response.ticker;
                     var q = response.qSold;
                     var d = response.newBalance;
-                    var r = /\d+/;
-                    var bal = parseFloat(strbal.match(d));
-                    var newBalance = response.newBalance
+                    var bal = parseFloat(d);
                     var date = response.date;
                     var idx = currentStocksOwned.findIndex(obj => obj["ticker"] == ticker);
                     currentStocksOwned[idx]["quantity"] = parseFloat(currentStocksOwned[idx]["quantity"]) - parseFloat(q);
-                    $('#dollars').text(d);
+                    $('#dollars').text(`\$${d}`);
                     idx = PurchasedStockIDs.findIndex(obj => obj["ticker"] == ticker);
                     PurchasedStockIDs[idx]["quantity"] = parseFloat( PurchasedStockIDs[idx]["quantity"]) - parseFloat(q);
                     timeWarp();
@@ -552,17 +560,17 @@
         DrawPiechart = (data) => {
 
             if (newPie != null) {
-                //newPie.canvas = null
-                //newPie.collapsing = null
-                //newPie.context = null
-                //newPie.data = null
-                //newPie.draggedPie = null
-                //newPie.drawNode = null
-                //newPie.drawSegment = null
-                //newPie.hoveredIndex = null
-                //newPie.minAngle = null
-                //newPie.onchange = null
-                //newPie.radius = null
+                newPie.canvas = null
+                newPie.collapsing = null
+                newPie.context = null
+                newPie.data = null
+                newPie.draggedPie = null
+                newPie.drawNode = null
+                newPie.drawSegment = null
+                newPie.hoveredIndex = null
+                newPie.minAngle = null
+                newPie.onchange = null
+                newPie.radius = null
                 newPie.destroy();
                 newPie = null;
             }  
@@ -640,8 +648,10 @@
         var r = /\d+/;
         var bal = parseFloat(strbal.match(r));
         var amnt = Math.ceil((amntPercentage * bal)/100);
+        $('#inputmoney').val(amnt);
         //$('#inputmoneyslider').trigger('change');
         //$('#inputmoney').trigger('change');
+        $('#inputmoneyslider').val(amnt);
 
             
 	    // get all percentages
@@ -661,21 +671,19 @@
         var percentage = (amountToInvest / bal)*100;
         var CF = 0.062831853071796;
         var Newangle = percentage * CF;
-        newPie.minAngle = Newangle;
-        newPie.moveAngle(1, 0)
-        newPie.moveAngle(0,Newangle)
+        newPie.moveAngle(0,(2*Math.pi) - Newangle)
         
         $('#inputmoney').val($('#inputmoneyslider').val())
 
         
 
-        //var data = 
-        //[
-        //    { angle: 0, format: { color: "#2665da", label: 'Amount to invest' }, collapsed: false },
-        //    { angle: Newangle, format: { color: "#6dd020", label: 'Balance' }, collapsed: false }
-        //];
-        //DrawPiechart(data);
-        //$('#inputmoneyslider').trigger("input")
+        var data = 
+        [
+            { angle: 0, format: { color: "#2665da", label: 'Amount to invest' }, collapsed: false },
+            { angle: Newangle, format: { color: "#6dd020", label: 'Balance' }, collapsed: false }
+        ];
+        DrawPiechart(data);
+        $('#inputmoney').val($('#inputmoneyslider').val())
 
 
     }

@@ -103,7 +103,7 @@ namespace StockTradingApp.Pages
                 
                 response.Add("qSold", quantity);
                 response.Add("ticker", ticker);
-                response.Add("newBalance", newBalance.ToString("C"));
+                response.Add("newBalance", newBalance.ToString());
                 response.Add("date", date);
 
                 return new JsonResult(response);
@@ -133,7 +133,7 @@ namespace StockTradingApp.Pages
                 decimal prevAssets = 0;
                 if (HttpContext.Session.Get("assets") is not null)
                 {
-                    prevAssets = (decimal)HttpContext.Session.GetInt32("assetsCents") / 100;
+                    prevAssets = (decimal)HttpContext.Session.GetInt32("assets") / 100;
                 }
                 else
                 {

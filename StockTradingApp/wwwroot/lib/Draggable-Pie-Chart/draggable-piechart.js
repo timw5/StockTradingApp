@@ -248,6 +248,9 @@
      * Gets the geometry of the pie chart in the canvas
      */
     DraggablePiechart.prototype.getGeometry = function () {
+        if (this.canvas == null) {
+            return;
+        }
         var centerX = Math.floor(this.canvas.width / 2);
         var centerY = Math.floor(this.canvas.height / 2);
         return {
@@ -261,6 +264,9 @@
      * Returns a segment to drag if given a close enough location
      */
     DraggablePiechart.prototype.getTarget = function (targetLocation) {
+        if (this.data == null) {
+            return;
+        }
 
         var geometry = this.getGeometry();
         var startingAngles = [];
@@ -431,6 +437,9 @@
         var piechart = this;
         var context = piechart.context;
         var canvas = piechart.canvas;
+        if (this.canvas == null) {
+            return;
+        }
         context.clearRect(0, 0, canvas.width, canvas.height);
 
         var geometry = this.getGeometry();
