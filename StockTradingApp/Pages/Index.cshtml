@@ -57,7 +57,7 @@
                 {
                     foreach (var item in Model.SupportedTickers)
                     {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <option value="@item"></option>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <option value="@item"></option>
                     }
                 }
             }
@@ -115,8 +115,9 @@
                     <hr/>
                     <div class="container w-100 text-start" id="stocksOwned">
                     </div>
-                    <h5>Sell History:</h5>
-                    <hr/>
+                    <br />
+                    <h5>Sell History:</h5>                     
+                    <hr/>                     
                     <div class="container w-100 text-start" id="stocksSold">
                     </div>
 
@@ -288,7 +289,7 @@
             }
         }
 
-    function onButtonClickSell() {
+        function onButtonClickSell() {
             //document.getElementById("testFunction").innerHTML = "SELL BUTTON";
         var Options = '';
         var quantities = '';
@@ -311,13 +312,13 @@
 
         <div class="input-group w-50 mx-auto">
             <span class="input-group-text">Amount To Sell </span>
-            <input id="swal-input-Amount" type="number" min="0" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57" class="form-control">
+            <input id="swal-input-Amount" type="number" min="0" step="0.001" pattern="^\d*(\.\d{0,2})?$" class="form-control">
         </div>
 
 
         `
 
-        const { value: transferdata } = swal.fire
+        swal.fire
         ({
             title: 'Sell My Stock',
             html : html,
@@ -327,60 +328,101 @@
             confirmButtonColor: "#3085d6",
             preConfirm: () => 
             {
-                
+                var ticker = $('#swal-input-ticker').find(":selected").attr("name");
+                var idx = currentStocksOwned.findIndex(obj => obj["ticker"] == ticker.toString());
+                var totalAmount = currentStocksOwned[idx]["quantity"];
+                var quantity = document.getElementById('swal-input-Amount').value;
+                if (quantity > totalAmount) {
+                    swal.close();
+                    return false;
+                }
+                if (ticker == "Select a ticker" || quantity == null) {
+                    swal.close();
+                    return false;
+                }
+                var newQuantity = parseFloat(totalAmount) - parseFloat(quantity);
+                var result = {
+                    ticker: ticker.toString(),
+                    quantity: quantity.toString(),
+                    newQuantity: newQuantity.toString()
+                };
+
+                return result;
             }
 
         })
         .then((result) => {
-            //$.ajax
-            //({
-            //    url: "./Index?handler=SellFunds"
-            //    data: JSON.stringify(result)
-            //    success: (response) => 
-            //    {
-            //        $('#balance').val(response.newbalance);
-            //        timeWarp();
-            //    }
-            //})
+            var data = result['value'];
+            $.ajax
+            ({
+                type: "POST",
+                url: "./Index?handler=SellFunds",
+                beforeSend: (xhr) => {
+                    xhr.setRequestHeader("XSRF-TOKEN", $('input:hidden[name="__RequestVerificationToken"]').val());
+                },
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                data: JSON.stringify(data),
+                success: (response) => 
+                {
+                    var ticker = response.ticker;
+                    var q = response.qSold;
+                    var d = response.newBalance;
+                    var date = response.date;
+                    var idx = currentStocksOwned.findIndex(obj => obj["ticker"] == ticker.toString());
+                    currentStocksOwned[idx]["quantity"] = parseFloat(currentStocksOwned[idx]["quantity"]) - parseFloat(q);
+                    $('#dollars').text(d);
+                    timeWarp();
+                    $('#stocksSold').append(
+                        `<div class="text-start">
+                            <strong>${ticker}</strong> :<br/>
+                            &emsp;Quantity: ${q}<br/>
+                            &emsp;Date: ${date}<br/>
+                        </div><hr/>`)
+                    $('#inputmoneyslider').attr('max', d)
+                    return result;
+                }
+            })
         })
 
 
         updateNewBalance = () => 
         {
             //access the dom object to update the balance..
+
         }
 
 
 
-        //    swal.fire({
-        //        title: 'Sell My Stock',
-        //        html: html, //Display a list of tickers owned
-        //        showCancelButton: true,
-        //        confirmButtonText: 'Sell',
-        //        cancelButtonColor: '#d33',
-        //        confirmButtonColor: "#3085d6",
+            //swal.fire({
+            //    title: 'Sell Stock',
+            //    html: html, //Display a list of tickers owned
+            //    showCancelButton: true,
+            //    confirmButtonText: 'Sell',
+            //    cancelButtonColor: '#d33',
+            //    confirmButtonColor: "#3085d6",
 
-        //    }).then((result) => {
+            //}).then((result) => {
 
-        //        if (result.isConfirmed) {
-        //            swal.fire({
-        //                title: 'Confirm',
-        //                text: 'You are about to sell &emsp;&{ticker}',
-        //                showCancelButton: true,
-        //                confirmButtonText: 'Confirm',
-        //                cancelButtonColor: '#d33',
-        //                confirmButtonColor: "#3085d6"
+            //    if (result.isConfirmed) {
+            //        swal.fire({
+            //            title: 'Confirm',
+            //            text: 'You are about to sell &emsp;&{ticker}',
+            //            showCancelButton: true,
+            //            confirmButtonText: 'Confirm',
+            //            cancelButtonColor: '#d33',
+            //            confirmButtonColor: "#3085d6"
 
-        //            }).then((answer) => {
-        //                if (answer.isConfirmed) {
-        //                    swal.fire({
-        //                        title: 'Success',
-        //                        text: 'You sold STOCK for VALUE.'
-        //                    })
-        //                }
-        //            })
-        //        }
-        //    })
+            //        }).then((answer) => {
+            //            if (answer.isConfirmed) {
+            //                swal.fire({
+            //                    title: 'Success',
+            //                    text: 'You sold STOCK for VALUE.'
+            //                })
+            //            }
+            //        })
+            //    }
+            //})
         }
 
 
