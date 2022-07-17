@@ -67,13 +67,8 @@ namespace StockTradingApp.Pages
         }
         
 
-        //TODO:
-        public IActionResult OnPostSellFunds([FromBody] dynamic? data)
-        {
-            //return the new balance
-        }
 
-        //buy
+
         public IActionResult OnPostMinusFunds([FromBody]dynamic? data)
         {
             if(HttpContext.Session.Get("cents") is null || HttpContext.Session.Get("date") is null || data is null)

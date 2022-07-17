@@ -57,7 +57,7 @@
                 {
                     foreach (var item in Model.SupportedTickers)
                     {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <option value="@item"></option>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <option value="@item"></option>
                     }
                 }
             }
@@ -77,7 +77,7 @@
 
                         <label for="inputmoney" class="form-label mt-4 ">Amnt to invest</label>
                         <input type="number" id="inputmoney" value="" step=".01" pattern="^\d*(\.\d{0,2})?$" class="form-control w-50 mx-auto" placeholder="" />
-                        <input type="range" id="inputmoneyslider" value="0" ondrag="this.nextElementSibling.value = this.value" step="1" min="0" max="10000" class="form-range w-50 mx-auto" placeholder="" oninput="this.previousElementSibling.value = this.value"/><br />
+                        <input type="range" id="inputmoneyslider" value="0"  step="1" min="0" max="10000" class="form-range w-50 mx-auto" placeholder="" @*oninput="this.previousElementSibling.value = this.value"*@/><br />
                         <canvas id="piechart"></canvas>
                         <button style="display:inline-block" onclick="onButtonClickStart()" id="btnStart" class=" btn btn-info btn-sm m-2 mt-4">Start</button>
                         <button style="display:none" onclick="onButtonClickQuit()" id="btnQuit" class="btn btn-sm btn-danger m-2 mt-4">Quit</button>
@@ -90,16 +90,14 @@
                             <hr class="mt-2" />
 
                             <span>
-                                Current Balance:&nbsp;&nbsp;
+                                Current Balance:
                             </span>
 
-                            <span id="dollars">
+                            <div class="d-inline" id="dollars" value="$@Model.balance">
                                 $@Model.balance
-                            </span>
+                            </div>
 
                             <br />
-                            <br />
-
                             <span>
                                 Total Assets:&nbsp;&nbsp;
                             </span>
@@ -116,6 +114,10 @@
                     <h5>Purchase History:</h5>
                     <hr/>
                     <div class="container w-100 text-start" id="stocksOwned">
+                    </div>
+                    <h5>Sell History:</h5>
+                    <hr/>
+                    <div class="container w-100 text-start" id="stocksSold">
                     </div>
 
                 </div>
@@ -254,8 +256,8 @@
                             //logic to add shares to an existing stock in our map (currentStocksOwned)
 
 
-                            if (currentStocksOwned.find(obj => obj["ticker"] = ticker.toString())) {
-                                var idx = currentStocksOwned.findIndex(obj => obj["ticker"] = ticker.toString());
+                            if (currentStocksOwned.find(obj => obj["ticker"] == ticker.toString())) {
+                                var idx = currentStocksOwned.findIndex(obj => obj["ticker"] == ticker.toString());
                                 currentStocksOwned[idx]["quantity"] = parseFloat(currentStocksOwned[idx]["quantity"]) + parseFloat(q);
                             }
                             else {
@@ -263,12 +265,9 @@
                                 currentStocksOwned.push(stockItem);
                             }
 
-
-
-
-
                         $('#dollars').text(`\$${dollars}.${cents}`)
 
+                        $('#dollars').val(dollars + cents);
                         $('#stocksOwned').append(
                             `<div id="${id}" class="text-start">
                                 <strong>${ticker}</strong> :<br/>
@@ -318,7 +317,7 @@
 
         `
 
-        const { value: transferdata } = await swal.fire
+        const { value: transferdata } = swal.fire
         ({
             title: 'Sell My Stock',
             html : html,
@@ -333,16 +332,16 @@
 
         })
         .then((result) => {
-            $.ajax
-            ({
-                url: "./Index?handler=SellFunds"
-                data: JSON.stringify(result)
-                success: (response) => 
-                {
-                    $('#balance').val(response.newbalance);
-                    timeWarp();
-                }
-            })
+            //$.ajax
+            //({
+            //    url: "./Index?handler=SellFunds"
+            //    data: JSON.stringify(result)
+            //    success: (response) => 
+            //    {
+            //        $('#balance').val(response.newbalance);
+            //        timeWarp();
+            //    }
+            //})
         })
 
 
@@ -353,35 +352,35 @@
 
 
 
-            swal.fire({
-                title: 'Sell My Stock',
-                html: html, //Display a list of tickers owned
-                showCancelButton: true,
-                confirmButtonText: 'Sell',
-                cancelButtonColor: '#d33',
-                confirmButtonColor: "#3085d6",
+        //    swal.fire({
+        //        title: 'Sell My Stock',
+        //        html: html, //Display a list of tickers owned
+        //        showCancelButton: true,
+        //        confirmButtonText: 'Sell',
+        //        cancelButtonColor: '#d33',
+        //        confirmButtonColor: "#3085d6",
 
-            }).then((result) => {
+        //    }).then((result) => {
 
-                if (result.isConfirmed) {
-                    swal.fire({
-                        title: 'Confirm',
-                        text: 'You are about to sell &emsp;&{ticker}',
-                        showCancelButton: true,
-                        confirmButtonText: 'Confirm',
-                        cancelButtonColor: '#d33',
-                        confirmButtonColor: "#3085d6"
+        //        if (result.isConfirmed) {
+        //            swal.fire({
+        //                title: 'Confirm',
+        //                text: 'You are about to sell &emsp;&{ticker}',
+        //                showCancelButton: true,
+        //                confirmButtonText: 'Confirm',
+        //                cancelButtonColor: '#d33',
+        //                confirmButtonColor: "#3085d6"
 
-                    }).then((answer) => {
-                        if (answer.isConfirmed) {
-                            swal.fire({
-                                title: 'Success',
-                                text: 'You sold STOCK for VALUE.'
-                            })
-                        }
-                    })
-                }
-            })
+        //            }).then((answer) => {
+        //                if (answer.isConfirmed) {
+        //                    swal.fire({
+        //                        title: 'Success',
+        //                        text: 'You sold STOCK for VALUE.'
+        //                    })
+        //                }
+        //            })
+        //        }
+        //    })
         }
 
 
@@ -502,31 +501,51 @@
             Plotly.newPlot('amnt', data, layout, { dragmode: 'select', pad: '2', autosize: true, scrollZoom: true, displayModeBar: false, clickmode: 'select' });
             return;
         }
+        var newPie = null;
+        DrawPiechart = (data) => {
+
+            if (newPie != null) {
+                //newPie.canvas = null
+                //newPie.collapsing = null
+                //newPie.context = null
+                //newPie.data = null
+                //newPie.draggedPie = null
+                //newPie.drawNode = null
+                //newPie.drawSegment = null
+                //newPie.hoveredIndex = null
+                //newPie.minAngle = null
+                //newPie.onchange = null
+                //newPie.radius = null
+                newPie.destroy();
+                newPie = null;
+            }            
+
+            var canvas = document.getElementById('piechart')
+            var context = canvas.getContext('2d');
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            newPie = new DraggablePiechart
+            ({
+                canvas: document.getElementById('piechart'),
+                onchange: onPieChartChange,
+                data: data,
+                minAngle: .0005
+            });
 
 
+        }
+        
+        
 
-        var data = [
-	        { angle: 0, format: { color: "#2665da", label: 'Amount to invest'}, collapsed: false },
-	        { angle: Math.PI, format: { color: "#6dd020", label: 'Balance'}, collapsed: false }];
-
-        var newPie = new DraggablePiechart({
-	                    canvas: document.getElementById('piechart'), 
-	                    onchange: onPieChartChange,
-                        data: data
-                    });
-
-        function onPieChartChange(piechart) {
-	        // get the percentage for the first slice
-	        var firstPercentage = piechart.getSliceSizePercentage(0);
-            
-            
-	
-	        // get all percentages
-	        var percentages = piechart.getAllSliceSizePercentages();
-}
 
         //Listeners************************************************************************
 
+        var data = 
+        [
+            { angle: 0, format: { color: "#2665da", label: 'Amount to invest' }, collapsed: false },
+            { angle: Math.PI, format: { color: "#6dd020", label: 'Balance' }, collapsed: false }
+        ];
+
+        DrawPiechart(data)
 
         $('#Tickers').change(() => refreshGraph())
 
@@ -544,9 +563,79 @@
             }, 1);
         });
 
+
     $('#inputmoney').change(() => {
         $('#inputmoneyslider').val($('#inputmoney').text())
+        //pi = 50%
+        //2pi = 100%
+        var amountToInvest = parseFloat($('#inputmoney').val());
+        var tbal = $('#dollars').val()
+        var strbal = $('#dollars').text()
+        var r = /\d+/;
+        var bal = parseFloat(strbal.match(r));
+
+        var percentage = (amountToInvest / bal)*100;
+        var CF = 0.062831853071796;
+        var Newangle = percentage * CF;
+
+        var data = 
+        [
+            { angle: 0, format: { color: "#2665da", label: 'Amount to invest' }, collapsed: false },
+            { angle: Newangle, format: { color: "#6dd020", label: 'Balance' }, collapsed: false }
+        ];
+        DrawPiechart(data);
     })
+
+    function onPieChartChange(piechart) 
+    {
+        
+	    // get the percentage for the first slice
+	    var amntPercentage = piechart.getSliceSizePercentage(0);
+        var strbal = $('#dollars').text()
+        var r = /\d+/;
+        var bal = parseFloat(strbal.match(r));
+        var amnt = Math.ceil((amntPercentage * bal)/100);
+        $('#inputmoneyslider').val(amnt);
+        $('#inputmoney').val(amnt);
+            
+	    // get all percentages
+	    var percentages = piechart.getAllSliceSizePercentages();
+    }
+
+
+
+
+    valueUpdated = () => {
+
+        var amountToInvest = parseFloat($('#inputmoney').val());
+        var tbal = $('#dollars').val()
+        var strbal = $('#dollars').text()
+        var r = /\d+/;
+        var bal = parseFloat(strbal.match(r));
+
+        var percentage = (amountToInvest / bal)*100;
+        var CF = 0.062831853071796;
+        var Newangle = percentage * CF;
+
+        var data = 
+        [
+            { angle: 0, format: { color: "#2665da", label: 'Amount to invest' }, collapsed: false },
+            { angle: Newangle, format: { color: "#6dd020", label: 'Balance' }, collapsed: false }
+        ];
+        DrawPiechart(data);
+                
+    }
+
+
+
+
+    $('#inputmoneyslider').on('change', valueUpdated);
+
+// Logs the value while the user is moving the slider
+    $('#inputmoneyslider').on('input', valueUpdated);
+
+
+
 
 
 

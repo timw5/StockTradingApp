@@ -76,6 +76,24 @@
             }
         }
 
+        DraggablePiechart.prototype.destroy = function () 
+        {
+            this.draggedPie = null;
+            this.hoveredIndex = null;
+            this.radius = null;
+            this.collapsing = null;
+            this.minAngle = null;
+            this.drawSegment = null;
+            this.drawNode = null;
+            this.onchange = null;
+            this.canvas = null;
+            this.context = null;
+            this.data = null;
+            this.defaults = null;
+            
+                       
+        }
+
         function touchEnd() {
 
             if (piechart.draggedPie) {
@@ -85,6 +103,7 @@
         }
 
         function touchMove(event) {
+   
             var dragLocation = getMouseLocation(event);
 
             if (!piechart.draggedPie) {
@@ -112,8 +131,10 @@
         }
 
         function getMouseLocation(evt) {
+            if (piechart.canvas == null) {
+                return;
+            }
             var rect = piechart.canvas.getBoundingClientRect();
-
             if (evt.clientX) {
                 return {
                     x: evt.clientX - rect.left,

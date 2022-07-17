@@ -96,6 +96,9 @@
         }
 
         function getMouseLocation(evt) {
+            if (piechart.canvas.getBoundingClientRect() = null) {
+                return;
+            }
             var rect = piechart.canvas.getBoundingClientRect();
 
             if (evt.clientX) {
