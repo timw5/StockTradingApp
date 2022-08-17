@@ -25,7 +25,7 @@ namespace StockTradingApp.Models
             if (!optionsBuilder.IsConfigured)
             {
                 //should probably protect this...
-                optionsBuilder.UseSqlServer("Data Source=sliceofbread.database.windows.net;Initial Catalog=sliceofbread;Persist Security Info=True;User ID=Boss;Password=Makers.$bench.mark");
+                optionsBuilder.UseSqlServer("Data Source");
             }
         }
 
